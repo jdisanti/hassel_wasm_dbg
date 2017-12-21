@@ -1,0 +1,15 @@
+.source-viewport {
+    height: 500px;
+    overflow-x: scroll;
+    overflow-y: scroll;
+
+    li.current {
+        background-color: #FC0;
+    }
+
+    pre {
+        margin: 0;
+        overflow-x: initial;
+        overflow-y: initial;
+    }
+}
