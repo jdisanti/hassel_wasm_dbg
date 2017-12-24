@@ -133,6 +133,13 @@ pub fn emulator_reg_status(emulator_ptr: *mut DebuggingEmulator) -> u8 {
 }
 
 #[no_mangle]
+pub fn emulator_reg_sp(emulator_ptr: *mut DebuggingEmulator) -> u8 {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
+        emulator.cpu().registers().sp
+    })
+}
+
+#[no_mangle]
 pub fn emulator_reg_pc(emulator_ptr: *mut DebuggingEmulator) -> u16 {
     with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         emulator.cpu().reg_pc()

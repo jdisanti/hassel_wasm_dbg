@@ -19,6 +19,7 @@ export class ActionUpdateRegisters {
     registerX: number;
     registerY: number;
     registerPc: number;
+    registerSp: number;
 }
 
 export const ACTION_SET_SRC = "ACTION_SET_SRC";

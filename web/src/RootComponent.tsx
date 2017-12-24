@@ -37,6 +37,7 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                                     registerS={state.emulator.registers.registerS}
                                     registerX={state.emulator.registers.registerX}
                                     registerY={state.emulator.registers.registerY}
+                                    registerSp={state.emulator.registers.registerSp}
                                     registerPc={state.emulator.registers.registerPc} />
                             </div>
                         </div>

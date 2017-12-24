@@ -19,6 +19,7 @@ export interface RegisterStore {
     registerS: number,
     registerX: number,
     registerY: number,
+    registerSp: number,
     registerPc: number,
 }
 
@@ -69,6 +70,7 @@ const initialState: RootStore = {
             registerS: 0,
             registerX: 0,
             registerY: 0,
+            registerSp: 0,
             registerPc: 0,
         },
         isPaused: true,
@@ -126,6 +128,7 @@ function emulatorReducer(state: EmulatorStore, action: Action): EmulatorStore {
                     registerS: action.registerS,
                     registerX: action.registerX,
                     registerY: action.registerY,
+                    registerSp: action.registerSp,
                     registerPc: action.registerPc,
                 }
             };

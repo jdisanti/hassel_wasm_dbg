@@ -31,6 +31,7 @@ interface WasmExports {
     emulator_reg_x: (WasmEmulatorInstance) => number;
     emulator_reg_y: (WasmEmulatorInstance) => number;
     emulator_reg_status: (WasmEmulatorInstance) => number;
+    emulator_reg_sp: (WasmEmulatorInstance) => number;
     emulator_reg_pc: (WasmEmulatorInstance) => number;
 }
 
@@ -131,6 +132,10 @@ export class Emulator {
         return this.assembly_exports.emulator_reg_status(this.emulator);
     }
 
+    public regSp(): number {
+        return this.assembly_exports.emulator_reg_sp(this.emulator);
+    }
+
     public regPc(): number {
         return this.assembly_exports.emulator_reg_pc(this.emulator);
     }
@@ -142,6 +147,7 @@ export class Emulator {
             registerS: this.regStatus(),
             registerX: this.regX(),
             registerY: this.regY(),
+            registerSp: this.regSp(),
             registerPc: this.regPc(),
         })
     }
