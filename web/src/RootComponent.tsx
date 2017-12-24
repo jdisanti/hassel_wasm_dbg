@@ -20,6 +20,7 @@ class RootComponent extends React.Component<RootComponentProps, any> {
             } else {
                 let sourceView = state.src.isLoading ? (<div>Loading...</div>) : (
                     <SourceView source={state.src.current || ''}
+                        sourceName={state.src.currentName || ''}
                         currentLine={state.src.currentLine} />
                 );
                 return (

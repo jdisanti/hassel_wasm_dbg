@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 export interface SourceViewProps {
+    sourceName: string,
     source: string,
     currentLine?: number,
 }
@@ -11,9 +12,14 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
     render(): JSX.Element {
         return (
             <div className="card source-viewport">
-                <ol>
-                    {this.lines().map((line, index) => this.renderLine(line, index + 1))}
-                </ol>
+                <div className="card-header">
+                    {this.props.sourceName}
+                </div>
+                <div className="card-block">
+                    <ol>
+                        {this.lines().map((line, index) => this.renderLine(line, index + 1))}
+                    </ol>
+                </div>
             </div>
         );
     }

@@ -37,6 +37,7 @@ export interface SrcStore {
     units: SrcUnit[],
     srcMap?: object,
     current?: string, // Current source code
+    currentName?: string,
     currentLine?: number,
 }
 
@@ -131,12 +132,14 @@ function srcReducer(state: SrcStore, action: Action): SrcStore {
             let units = action.units as SrcUnit[];
             let srcMap = action.srcMap;
             let current = units.length > 0 ? units[0].source : undefined;
+            let currentName = units.length > 0 ? units[0].name : undefined;
             return {
                 ...state,
                 isLoading: false,
                 units: units,
                 srcMap: srcMap,
                 current: current,
+                currentName: currentName,
             }
         }
         case ACTION_UPDATE_REGISTERS: {
@@ -145,6 +148,7 @@ function srcReducer(state: SrcStore, action: Action): SrcStore {
                 let location = state.srcMap["" + pc];
                 if (location) {
                     let newCurrent = state.units[location.unit].source;
+                    let newCurrentName = state.units[location.unit].name;
                     let newCurrentLine = 1;
                     for (let i = 0; i < location.offset; i++) {
                         if (newCurrent[i] === "\n") {
@@ -154,6 +158,7 @@ function srcReducer(state: SrcStore, action: Action): SrcStore {
                     return {
                         ...state,
                         current: newCurrent,
+                        currentName: newCurrentName,
                         currentLine: newCurrentLine,
                     };
                 }

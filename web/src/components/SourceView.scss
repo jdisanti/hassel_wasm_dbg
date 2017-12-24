@@ -1,7 +1,10 @@
 .source-viewport {
     height: 500px;
-    overflow-x: scroll;
-    overflow-y: scroll;
+
+    div.card-block {
+        overflow-x: scroll;
+        overflow-y: scroll;
+    }
 
     li.current {
         background-color: #FC0;
