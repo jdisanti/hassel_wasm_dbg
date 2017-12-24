@@ -17,8 +17,15 @@ interface WasmExports {
 
     emulator_new: (any, number) => WasmEmulatorInstance;
     emulator_delete: (WasmEmulatorInstance) => void;
+
     emulator_reset: (WasmEmulatorInstance) => void;
     emulator_step: (WasmEmulatorInstance) => void;
+
+    emulator_add_breakpoint: (WasmEmulatorInstance, number) => void;
+    emulator_remove_breakpoint: (WasmEmulatorInstance, number) => void;
+    emulator_remove_all_breakpoints: (WasmEmulatorInstance) => void;
+    emulator_play: (WasmEmulatorInstance, number) => boolean;
+
     emulator_reg_a: (WasmEmulatorInstance) => number;
     emulator_reg_x: (WasmEmulatorInstance) => number;
     emulator_reg_y: (WasmEmulatorInstance) => number;

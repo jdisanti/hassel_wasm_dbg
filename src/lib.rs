@@ -1,8 +1,11 @@
 use std::rc::Rc;
 use std::cell::RefCell;
+
 extern crate hassel_emu;
-use hassel_emu::emulator::Emulator;
 use hassel_emu::bus::PlaceholderBus;
+
+mod debug;
+use debug::{DebuggingEmulator, StepResult};
 
 use std::os::raw::c_void;
 use std::mem;
@@ -23,13 +26,13 @@ pub fn dealloc(ptr: *mut c_void, len: usize) {
 }
 
 #[no_mangle]
-pub fn emulator_new(rom_ptr: *mut u8, rom_length: usize) -> *mut Emulator {
+pub fn emulator_new(rom_ptr: *mut u8, rom_length: usize) -> *mut DebuggingEmulator {
     let rom = if rom_length == 0x2000 {
         unsafe { Vec::from_raw_parts(rom_ptr, rom_length, rom_length) }
     } else {
         vec![0; 0x2000]
     };
-    let emulator = Box::new(Emulator::new(
+    let emulator = Box::new(DebuggingEmulator::new(
         rom,
         Rc::new(RefCell::new(PlaceholderBus::new("test".into()))),
     ));
@@ -37,73 +40,101 @@ pub fn emulator_new(rom_ptr: *mut u8, rom_length: usize) -> *mut Emulator {
 }
 
 #[no_mangle]
-pub fn emulator_delete(emulator_ptr: *mut Emulator) {
-    let emulator: Box<Emulator> = unsafe { Box::from_raw(emulator_ptr) };
+pub fn emulator_delete(emulator_ptr: *mut DebuggingEmulator) {
+    let emulator: Box<DebuggingEmulator> = unsafe { Box::from_raw(emulator_ptr) };
     drop(emulator);
 }
 
-macro_rules! with_emu_return {
-    ( mut $emulator:ident, $emulator_ptr:ident, $func:expr )  => {
-        let mut $emulator: Box<Emulator> = unsafe { Box::from_raw($emulator_ptr) };
-        let result = $func();
-        mem::forget($emulator);
-        return result;
-    };
-    ( $emulator:ident, $emulator_ptr:ident, $func:expr )  => {
-        let $emulator: Box<Emulator> = unsafe { Box::from_raw($emulator_ptr) };
-        let result = $func();
-        mem::forget($emulator);
-        return result;
-    };
+fn with_emu<F, R>(emulator_ptr: *mut DebuggingEmulator, func: F) -> R
+        where F: Fn(&mut DebuggingEmulator) -> R {
+    let mut emulator: Box<DebuggingEmulator> = unsafe { Box::from_raw(emulator_ptr) };
+    let result = func(&mut *emulator);
+    mem::forget(emulator);
+    return result;
 }
 
 #[no_mangle]
-pub fn emulator_reset(emulator_ptr: *mut Emulator) {
-    with_emu_return!(mut emulator, emulator_ptr, &mut || {
+pub fn emulator_reset(emulator_ptr: *mut DebuggingEmulator) {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         emulator.reset();
-        ()
     });
 }
 
 #[no_mangle]
-pub fn emulator_step(emulator_ptr: *mut Emulator) {
-    with_emu_return!(mut emulator, emulator_ptr, &mut || {
+pub fn emulator_step(emulator_ptr: *mut DebuggingEmulator) {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         emulator.step();
-        ()
     });
 }
 
 #[no_mangle]
-pub fn emulator_reg_a(emulator_ptr: *mut Emulator) -> u8 {
-    with_emu_return!(emulator, emulator_ptr, &mut || {
+pub fn emulator_add_breakpoint(emulator_ptr: *mut DebuggingEmulator, address: u16) {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
+        emulator.add_breakpoint(address);
+    });
+}
+
+#[no_mangle]
+pub fn emulator_remove_breakpoint(emulator_ptr: *mut DebuggingEmulator, address: u16) {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
+        emulator.remove_breakpoint(address);
+    });
+}
+
+#[no_mangle]
+pub fn emulator_remove_all_breakpoints(emulator_ptr: *mut DebuggingEmulator) {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
+        emulator.remove_all_breakpoints();
+    });
+}
+
+#[no_mangle]
+pub fn emulator_play(emulator_ptr: *mut DebuggingEmulator, cycles: usize) -> bool {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
+        let mut cycles_run = 0;
+        while cycles_run < cycles {
+            cycles_run += match emulator.step() {
+                StepResult::Ok(cycles) => cycles,
+                StepResult::HitBreakpoint(_cycles, _pc) => {
+                    return true;
+                }
+            }
+        }
+        false
+    })
+}
+
+#[no_mangle]
+pub fn emulator_reg_a(emulator_ptr: *mut DebuggingEmulator) -> u8 {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         emulator.cpu().registers().a
-    });
+    })
 }
 
 #[no_mangle]
-pub fn emulator_reg_x(emulator_ptr: *mut Emulator) -> u8 {
-    with_emu_return!(emulator, emulator_ptr, &mut || {
+pub fn emulator_reg_x(emulator_ptr: *mut DebuggingEmulator) -> u8 {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         emulator.cpu().registers().x
-    });
+    })
 }
 
 #[no_mangle]
-pub fn emulator_reg_y(emulator_ptr: *mut Emulator) -> u8 {
-    with_emu_return!(emulator, emulator_ptr, &mut || {
+pub fn emulator_reg_y(emulator_ptr: *mut DebuggingEmulator) -> u8 {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         emulator.cpu().registers().y
-    });
+    })
 }
 
 #[no_mangle]
-pub fn emulator_reg_status(emulator_ptr: *mut Emulator) -> u8 {
-    with_emu_return!(emulator, emulator_ptr, &mut || {
+pub fn emulator_reg_status(emulator_ptr: *mut DebuggingEmulator) -> u8 {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         emulator.cpu().registers().status.value()
-    });
+    })
 }
 
 #[no_mangle]
-pub fn emulator_reg_pc(emulator_ptr: *mut Emulator) -> u16 {
-    with_emu_return!(emulator, emulator_ptr, &mut || {
+pub fn emulator_reg_pc(emulator_ptr: *mut DebuggingEmulator) -> u16 {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         emulator.cpu().reg_pc()
-    });
+    })
 }
