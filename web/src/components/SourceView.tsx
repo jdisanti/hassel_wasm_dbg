@@ -6,6 +6,8 @@ export interface SourceViewProps {
 }
 
 export default class SourceView extends React.Component<SourceViewProps, any> {
+    private currentLine: HTMLLIElement | null = null;
+
     render(): JSX.Element {
         return (
             <div className="card source-viewport">
@@ -17,11 +19,24 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
     }
 
     renderLine(line: string, lineNumber: number): JSX.Element {
+        let isCurrent = this.props.currentLine === lineNumber;
         return (
-            <li key={lineNumber} className={this.props.currentLine === lineNumber ? "current" : ""}>
+            <li key={lineNumber}
+                className={isCurrent ? "current" : ""}
+                ref={(line) => this.currentLine = isCurrent ? line : this.currentLine}>
                 <pre>{line === "" ? " " : line}</pre>
             </li>
         );
+    }
+
+    componentDidUpdate(previousProps) {
+        if (this.props.currentLine !== previousProps.currentLine && this.currentLine) {
+            this.currentLine.scrollIntoView({
+                behavior: "instant",
+                block: "nearest",
+                inline: "nearest",
+            });
+        }
     }
 
     private lines(): string[] {

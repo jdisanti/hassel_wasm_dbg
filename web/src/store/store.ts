@@ -36,7 +36,8 @@ export interface SrcStore {
     isLoading: boolean,
     units: SrcUnit[],
     srcMap?: object,
-    current?: string,
+    current?: string, // Current source code
+    currentLine?: number,
 }
 
 export interface RootStore {
@@ -70,7 +71,6 @@ export const store = createStore(
 function rootReducer(state: RootStore = initialState, action: Action): RootStore {
     switch (action.type) {
         case ACTION_INIT_EMULATOR:
-        case ACTION_UPDATE_REGISTERS:
         case ACTION_PLAY:
         case ACTION_PAUSE:
         case ACTION_STOP:
@@ -78,6 +78,12 @@ function rootReducer(state: RootStore = initialState, action: Action): RootStore
             return { ...state, emulator: emulatorReducer(state.emulator, action) };
         case ACTION_SET_SRC:
             return { ...state, src: srcReducer(state.src, action) };
+        case ACTION_UPDATE_REGISTERS:
+            return {
+                ...state,
+                emulator: emulatorReducer(state.emulator, action),
+                src: srcReducer(state.src, action),
+            };
         default:
             return state;
     }
@@ -99,11 +105,19 @@ function emulatorReducer(state: EmulatorStore, action: Action): EmulatorStore {
                 }
             };
         case ACTION_STEP: {
-                setTimeout(() => {
-                    if (state.instance) {
-                        state.instance.step()
-                    }
-                }, 0);
+            setTimeout(() => {
+                if (state.instance) {
+                    state.instance.step()
+                }
+            }, 0);
+            return state;
+        }
+        case ACTION_STOP: {
+            setTimeout(() => {
+                if (state.instance) {
+                    state.instance.reset();
+                }
+            }, 0);
             return state;
         }
         default:
@@ -124,6 +138,27 @@ function srcReducer(state: SrcStore, action: Action): SrcStore {
                 srcMap: srcMap,
                 current: current,
             }
+        }
+        case ACTION_UPDATE_REGISTERS: {
+            if (state.srcMap) {
+                let pc = action.registerPc;
+                let location = state.srcMap["" + pc];
+                if (location) {
+                    let newCurrent = state.units[location.unit].source;
+                    let newCurrentLine = 1;
+                    for (let i = 0; i < location.offset; i++) {
+                        if (newCurrent[i] === "\n") {
+                            newCurrentLine++;
+                        }
+                    }
+                    return {
+                        ...state,
+                        current: newCurrent,
+                        currentLine: newCurrentLine,
+                    };
+                }
+            }
+            return state;
         }
         default:
             return state;
