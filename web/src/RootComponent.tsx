@@ -21,7 +21,8 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                 let sourceView = state.src.isLoading ? (<div>Loading...</div>) : (
                     <SourceView lines={state.src.currentSrc.lines}
                         sourceName={state.src.currentSrc.name}
-                        currentLine={state.src.currentSrc.currentLine} />
+                        currentLine={state.src.currentSrc.currentLine}
+                        breakpoints={state.src.breakpoints} />
                 );
                 return (
                     <div className="container-fluid">
@@ -40,7 +41,7 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                             </div>
                         </div>
                         <div className="row">
-                            <DebugToolbar isPaused={true} />
+                            <DebugToolbar isPaused={state.emulator.isPaused} />
                         </div>
                     </div>
                 );

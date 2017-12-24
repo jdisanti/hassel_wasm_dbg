@@ -48,6 +48,18 @@ export class ActionStep {
     type: "ACTION_STEP";
 }
 
+export const ACTION_SET_BREAKPOINT = "ACTION_SET_BREAKPOINT";
+export class ActionSetBreakpoint {
+    type: "ACTION_SET_BREAKPOINT";
+    address: number;
+}
+
+export const ACTION_CLEAR_BREAKPOINT = "ACTION_CLEAR_BREAKPOINT";
+export class ActionClearBreakpoint {
+    type: "ACTION_CLEAR_BREAKPOINT";
+    address: number;
+}
+
 export type Action =
     ActionInit |
     ActionInitEmulator |
@@ -56,4 +68,6 @@ export type Action =
     ActionPlay |
     ActionPause |
     ActionStop |
-    ActionStep;
+    ActionStep |
+    ActionSetBreakpoint |
+    ActionClearBreakpoint;

@@ -2,6 +2,7 @@ import {
     ACTION_INIT_EMULATOR,
     ACTION_SET_SRC,
     ACTION_UPDATE_REGISTERS,
+    ACTION_PAUSE,
 } from './store/actions';
 import { store } from './store/store';
 
@@ -37,6 +38,8 @@ export class Emulator {
     private assembly_instance: WebAssembly.Instance;
     private assembly_exports: WasmExports;
     private emulator: WasmEmulatorInstance;
+    private playbackInterval: number | null = null;
+    private playing: boolean = false;
 
     constructor(instance: WebAssembly.Instance, rom: ArrayBuffer) {
         this.assembly_instance = instance;
@@ -55,43 +58,91 @@ export class Emulator {
     }
 
     public reset() {
-        this.assembly_exports.emulator_reset(this.emulator);
-        this.send_update();
+        if (!this.playing) {
+            this.assembly_exports.emulator_reset(this.emulator);
+            this.sendUpdate();
+        }
     }
 
     public step() {
-        this.assembly_exports.emulator_step(this.emulator);
-        this.send_update();
+        if (!this.playing) {
+            this.assembly_exports.emulator_step(this.emulator);
+            this.sendUpdate();
+        }
     }
 
-    public reg_a(): number {
+    public addBreakpoint(address: number) {
+        this.assembly_exports.emulator_add_breakpoint(this.emulator, address);
+    }
+
+    public removeBreakpoint(address: number) {
+        this.assembly_exports.emulator_remove_breakpoint(this.emulator, address);
+    }
+
+    public removeAllBreakpoints() {
+        this.assembly_exports.emulator_remove_all_breakpoints(this.emulator);
+    }
+
+    private play(cycles: number): boolean {
+        return this.assembly_exports.emulator_play(this.emulator, cycles);
+    }
+
+    public startPlayback() {
+        if (!this.playing) {
+            this.playing = true;
+
+            // 60,000 cycles should execute in 10 milliseconds for semi-accurate timing
+            let cyclesPerInterval = 60000;
+            let interval = 10;
+
+            let timeoutMethod = () => {
+                if (this.playing) {
+                    if (this.play(cyclesPerInterval)) {
+                        store.dispatch({ type: ACTION_PAUSE });
+                    } else {
+                        setTimeout(timeoutMethod, interval);
+                    }
+                } else {
+                    this.sendUpdate();
+                }
+            }
+            setTimeout(timeoutMethod, interval);
+        }
+    }
+
+    public stopPlayback() {
+        this.playing = false;
+        this.sendUpdate();
+    }
+
+    public regA(): number {
         return this.assembly_exports.emulator_reg_a(this.emulator);
     }
 
-    public reg_x(): number {
+    public regX(): number {
         return this.assembly_exports.emulator_reg_x(this.emulator);
     }
 
-    public reg_y(): number {
+    public regY(): number {
         return this.assembly_exports.emulator_reg_y(this.emulator);
     }
 
-    public reg_status(): number {
+    public regStatus(): number {
         return this.assembly_exports.emulator_reg_status(this.emulator);
     }
 
-    public reg_pc(): number {
+    public regPc(): number {
         return this.assembly_exports.emulator_reg_pc(this.emulator);
     }
 
-    public send_update() {
+    public sendUpdate() {
         store.dispatch({
             type: ACTION_UPDATE_REGISTERS,
-            registerA: this.reg_a(),
-            registerS: this.reg_status(),
-            registerX: this.reg_x(),
-            registerY: this.reg_y(),
-            registerPc: this.reg_pc(),
+            registerA: this.regA(),
+            registerS: this.regStatus(),
+            registerX: this.regX(),
+            registerY: this.regY(),
+            registerPc: this.regPc(),
         })
     }
 }

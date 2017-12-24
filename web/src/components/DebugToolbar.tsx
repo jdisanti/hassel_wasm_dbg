@@ -16,15 +16,15 @@ export default class DebugToolbar extends React.Component<DebugToolbarProps, any
         return (
             <div className="btn-toolbar">
                 <div className="btn-group mr-2" role="group">
-                    <button type="button" className="btn btn-secondary" onClick={this.playPauseClick}>
+                    <button type="button" className="btn btn-secondary" onClick={this.playPauseClick.bind(this)}>
                         {this.props.isPaused ? "\u25BA" : "\u23F8"}
                     </button>
-                    <button type="button" className="btn btn-secondary" onClick={this.stopClick}>
+                    <button type="button" className="btn btn-secondary" onClick={this.stopClick.bind(this)}>
                         {"\u25A0"}
                     </button>
                 </div>
                 <div className="btn-group mr-2" role="group">
-                    <button type="button" className="btn btn-secondary" onClick={this.stepClick}>
+                    <button type="button" className="btn btn-secondary" onClick={this.stepClick.bind(this)}>
                         {"\u21e8"}
                     </button>
                 </div>

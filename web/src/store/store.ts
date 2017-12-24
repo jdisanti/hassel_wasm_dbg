@@ -9,6 +9,8 @@ import {
     ACTION_PAUSE,
     ACTION_STEP,
     ACTION_STOP,
+    ACTION_SET_BREAKPOINT,
+    ACTION_CLEAR_BREAKPOINT,
 } from './actions';
 import { Emulator } from '../emulator';
 
@@ -24,6 +26,7 @@ export interface EmulatorStore {
     isLoading: boolean,
     instance?: Emulator,
     registers: RegisterStore,
+    isPaused: boolean,
 }
 
 export interface SrcUnit {
@@ -50,6 +53,7 @@ export interface SrcStore {
     units: SrcUnit[],
     addressToUnit: {[key:string]: number},
     currentSrc: CurrentSrc,
+    breakpoints: number[],
 }
 
 export interface RootStore {
@@ -66,7 +70,8 @@ const initialState: RootStore = {
             registerX: 0,
             registerY: 0,
             registerPc: 0,
-        }
+        },
+        isPaused: true,
     },
     src: {
         isLoading: true,
@@ -75,7 +80,8 @@ const initialState: RootStore = {
         currentSrc: {
             name: "",
             lines: [],
-        }
+        },
+        breakpoints: [],
     }
 };
 
@@ -96,6 +102,8 @@ function rootReducer(state: RootStore = initialState, action: Action): RootStore
         case ACTION_SET_SRC:
             return { ...state, src: srcReducer(state.src, action) };
         case ACTION_UPDATE_REGISTERS:
+        case ACTION_SET_BREAKPOINT:
+        case ACTION_CLEAR_BREAKPOINT:
             return {
                 ...state,
                 emulator: emulatorReducer(state.emulator, action),
@@ -121,6 +129,22 @@ function emulatorReducer(state: EmulatorStore, action: Action): EmulatorStore {
                     registerPc: action.registerPc,
                 }
             };
+        case ACTION_PLAY: {
+            setTimeout(() => {
+                if (state.instance) {
+                    state.instance.startPlayback();
+                }
+            }, 0);
+            return { ...state, isPaused: false };
+        }
+        case ACTION_PAUSE: {
+            setTimeout(() => {
+                if (state.instance) {
+                    state.instance.stopPlayback();
+                }
+            }, 0);
+            return { ...state, isPaused: true };
+        }
         case ACTION_STEP: {
             setTimeout(() => {
                 if (state.instance) {
@@ -135,6 +159,18 @@ function emulatorReducer(state: EmulatorStore, action: Action): EmulatorStore {
                     state.instance.reset();
                 }
             }, 0);
+            return state;
+        }
+        case ACTION_SET_BREAKPOINT: {
+            if (state.instance) {
+                state.instance.addBreakpoint(action.address);
+            }
+            return state;
+        }
+        case ACTION_CLEAR_BREAKPOINT: {
+            if (state.instance) {
+                state.instance.removeBreakpoint(action.address);
+            }
             return state;
         }
         default:
@@ -165,6 +201,22 @@ function srcReducer(state: SrcStore, action: Action): SrcStore {
                 };
             }
             return state;
+        }
+        case ACTION_SET_BREAKPOINT: {
+            let breakpoints: number[] = [];
+            state.breakpoints.forEach(address => breakpoints.push(address));
+            breakpoints.push(action.address);
+            return {
+                ...state,
+                breakpoints: breakpoints,
+            };
+        }
+        case ACTION_CLEAR_BREAKPOINT: {
+            let breakpoints = state.breakpoints.filter(address => address !== action.address);
+            return {
+                ...state,
+                breakpoints: breakpoints,
+            };
         }
         default:
             return state;
