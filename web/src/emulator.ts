@@ -12,10 +12,17 @@ const initial_src_map_url: string = require('../static/os.rom.s.map');
 interface WasmEmulatorInstance { }
 
 interface WasmExports {
-    emulator_new: () => WasmEmulatorInstance;
+    alloc: (number) => any;
+    dealloc: (any, number) => void;
+
+    emulator_new: (any, number) => WasmEmulatorInstance;
     emulator_delete: (WasmEmulatorInstance) => void;
     emulator_reset: (WasmEmulatorInstance) => void;
     emulator_step: (WasmEmulatorInstance) => void;
+    emulator_reg_a: (WasmEmulatorInstance) => number;
+    emulator_reg_x: (WasmEmulatorInstance) => number;
+    emulator_reg_y: (WasmEmulatorInstance) => number;
+    emulator_reg_status: (WasmEmulatorInstance) => number;
     emulator_reg_pc: (WasmEmulatorInstance) => number;
 }
 
@@ -27,7 +34,17 @@ export class Emulator {
     constructor(instance: WebAssembly.Instance, rom: ArrayBuffer) {
         this.assembly_instance = instance;
         this.assembly_exports = this.assembly_instance.exports;
-        this.emulator = this.assembly_exports.emulator_new();
+
+        let romView = new Uint8Array(rom);
+
+        // Don't need to dealloc because emulator_new takes ownership of it
+        let romPtr = this.assembly_exports.alloc(rom.byteLength);
+        let memView = new Uint8Array(this.assembly_instance.exports.memory.buffer);
+        for (let i = 0; i < rom.byteLength; i++) {
+            memView[romPtr + i] = romView[i];
+        }
+
+        this.emulator = this.assembly_exports.emulator_new(romPtr, rom.byteLength);
     }
 
     public reset() {
@@ -40,6 +57,22 @@ export class Emulator {
         this.send_update();
     }
 
+    public reg_a(): number {
+        return this.assembly_exports.emulator_reg_a(this.emulator);
+    }
+
+    public reg_x(): number {
+        return this.assembly_exports.emulator_reg_x(this.emulator);
+    }
+
+    public reg_y(): number {
+        return this.assembly_exports.emulator_reg_y(this.emulator);
+    }
+
+    public reg_status(): number {
+        return this.assembly_exports.emulator_reg_status(this.emulator);
+    }
+
     public reg_pc(): number {
         return this.assembly_exports.emulator_reg_pc(this.emulator);
     }
@@ -47,10 +80,10 @@ export class Emulator {
     public send_update() {
         store.dispatch({
             type: ACTION_UPDATE_REGISTERS,
-            registerA: 0,
-            registerS: 0,
-            registerX: 0,
-            registerY: 0,
+            registerA: this.reg_a(),
+            registerS: this.reg_status(),
+            registerX: this.reg_x(),
+            registerY: this.reg_y(),
             registerPc: this.reg_pc(),
         })
     }
