@@ -99,28 +99,39 @@ export function initEmulator() {
         .then(results => {
             let instance = results.instance;
 
-            fetch(initial_rom_url)
-                .then(response => response.arrayBuffer())
-                .then(rom => {
-                    let emulator = new Emulator(instance, rom);
-                    store.dispatch({
-                        type: ACTION_INIT_EMULATOR,
-                        instance: emulator,
-                    });
-                    emulator.reset();
-                });
-            
             fetch(initial_src_map_url)
                 .then(response => response.json())
                 .then(srcMap => {
                     let units = srcMap['src_units']['units'];
-                    let map = srcMap['pc_to_src'];
+                    let addressToUnit: {[key:string]: number} = {};
+
+                    let entries = srcMap['entries'];
+                    for (let entry of entries) {
+                        units[entry.unit].addressToLine = units[entry.unit].addressToLine || {};
+                        units[entry.unit].lineToAddress = units[entry.unit].lineToAddress || {};
+
+                        units[entry.unit].addressToLine["" + entry.address] = entry.line;
+                        units[entry.unit].lineToAddress["" + entry.line] = entry.address;
+
+                        addressToUnit["" + entry.address] = entry.unit;
+                    }
+
                     store.dispatch({
                         type: ACTION_SET_SRC,
                         units: units,
-                        srcMap: map,
+                        addressToUnit: addressToUnit,
                     });
+
+                    fetch(initial_rom_url)
+                        .then(response => response.arrayBuffer())
+                        .then(rom => {
+                            let emulator = new Emulator(instance, rom);
+                            store.dispatch({
+                                type: ACTION_INIT_EMULATOR,
+                                instance: emulator,
+                            });
+                            emulator.reset();
+                        });
                 });
         });
-
 }

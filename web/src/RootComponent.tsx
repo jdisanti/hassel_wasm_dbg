@@ -19,9 +19,9 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                 return (<p>Loading...</p>);
             } else {
                 let sourceView = state.src.isLoading ? (<div>Loading...</div>) : (
-                    <SourceView source={state.src.current || ''}
-                        sourceName={state.src.currentName || ''}
-                        currentLine={state.src.currentLine} />
+                    <SourceView lines={state.src.currentSrc.lines}
+                        sourceName={state.src.currentSrc.name}
+                        currentLine={state.src.currentSrc.currentLine} />
                 );
                 return (
                     <div className="container-fluid">

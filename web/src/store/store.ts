@@ -30,15 +30,26 @@ export interface SrcUnit {
     id: number,
     name: string,
     source: string,
+    addressToLine: object,
+    lineToAddress: object,
+}
+
+export interface Line {
+    address?: number,
+    text: string,
+}
+
+export interface CurrentSrc {
+    name: string,
+    lines: Line[],
+    currentLine?: number,
 }
 
 export interface SrcStore {
     isLoading: boolean,
     units: SrcUnit[],
-    srcMap?: object,
-    current?: string, // Current source code
-    currentName?: string,
-    currentLine?: number,
+    addressToUnit: {[key:string]: number},
+    currentSrc: CurrentSrc,
 }
 
 export interface RootStore {
@@ -60,6 +71,11 @@ const initialState: RootStore = {
     src: {
         isLoading: true,
         units: [],
+        addressToUnit: {},
+        currentSrc: {
+            name: "",
+            lines: [],
+        }
     }
 };
 
@@ -130,38 +146,23 @@ function srcReducer(state: SrcStore, action: Action): SrcStore {
     switch (action.type) {
         case ACTION_SET_SRC: {
             let units = action.units as SrcUnit[];
-            let srcMap = action.srcMap;
-            let current = units.length > 0 ? units[0].source : undefined;
-            let currentName = units.length > 0 ? units[0].name : undefined;
+            let current = units.length > 0 ? createCurrentSrc(units, 0) : { name: "", lines: [] };
             return {
                 ...state,
                 isLoading: false,
                 units: units,
-                srcMap: srcMap,
-                current: current,
-                currentName: currentName,
-            }
+                currentSrc: current,
+                addressToUnit: action.addressToUnit,
+            };
         }
         case ACTION_UPDATE_REGISTERS: {
-            if (state.srcMap) {
-                let pc = action.registerPc;
-                let location = state.srcMap["" + pc];
-                if (location) {
-                    let newCurrent = state.units[location.unit].source;
-                    let newCurrentName = state.units[location.unit].name;
-                    let newCurrentLine = 1;
-                    for (let i = 0; i < location.offset; i++) {
-                        if (newCurrent[i] === "\n") {
-                            newCurrentLine++;
-                        }
-                    }
-                    return {
-                        ...state,
-                        current: newCurrent,
-                        currentName: newCurrentName,
-                        currentLine: newCurrentLine,
-                    };
-                }
+            let address = action.registerPc;
+            let unit = state.addressToUnit[address];
+            if (unit !== undefined) {
+                return {
+                    ...state,
+                    currentSrc: createCurrentSrc(state.units, unit, address),
+                };
             }
             return state;
         }
@@ -170,8 +171,20 @@ function srcReducer(state: SrcStore, action: Action): SrcStore {
     }
 }
 
-store.dispatch({ type: ACTION_INIT });
+function createCurrentSrc(units: SrcUnit[], unit: number, address?: number): CurrentSrc {
+    let lineStrings = units[unit].source.split("\n");
+    let lines: Line[] = lineStrings.map((lineString, index) => {
+        return {
+            address: units[unit].lineToAddress["" + (1 + index)],
+            text: lineString,
+        };
+    });
 
-store.subscribe(() => {
-    console.log(store.getState());
-});
+    return {
+        name: units[unit].name,
+        lines: lines,
+        currentLine: address !== undefined ? units[unit].addressToLine[address] : undefined,
+    };
+}
+
+store.dispatch({ type: ACTION_INIT });

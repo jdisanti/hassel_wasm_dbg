@@ -1,8 +1,9 @@
 import * as React from 'react';
+import { Line } from '../store/store';
 
 export interface SourceViewProps {
     sourceName: string,
-    source: string,
+    lines: Line[],
     currentLine?: number,
 }
 
@@ -17,22 +18,32 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
                 </div>
                 <div className="card-block">
                     <ol>
-                        {this.lines().map((line, index) => this.renderLine(line, index + 1))}
+                        {this.props.lines.map((line, index) => this.renderLine(line, index + 1))}
                     </ol>
                 </div>
             </div>
         );
     }
 
-    renderLine(line: string, lineNumber: number): JSX.Element {
+    renderLine(line: Line, lineNumber: number): JSX.Element {
         let isCurrent = this.props.currentLine === lineNumber;
         return (
             <li key={lineNumber}
                 className={isCurrent ? "current" : ""}
                 ref={(line) => this.currentLine = isCurrent ? line : this.currentLine}>
-                <pre>{line === "" ? " " : line}</pre>
+                {this.renderAddress(line.address)}
+                <pre>{line.text === "" ? " " : line.text}</pre>
             </li>
         );
+    }
+
+    renderAddress(address?: number): JSX.Element {
+        if (address === undefined) {
+            return (<pre className="address">     : </pre>);
+        } else {
+            let formatted = (address + 0x10000).toString(16).substr(-4).toUpperCase();
+            return (<pre className="address">${formatted}: </pre>);
+        }
     }
 
     componentDidUpdate(previousProps) {
@@ -43,9 +54,5 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
                 inline: "nearest",
             });
         }
-    }
-
-    private lines(): string[] {
-        return this.props.source.split("\n");
     }
 }

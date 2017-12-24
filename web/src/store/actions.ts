@@ -25,7 +25,7 @@ export const ACTION_SET_SRC = "ACTION_SET_SRC";
 export class ActionSetSrc {
     type: "ACTION_SET_SRC";
     units: object;
-    srcMap: object;
+    addressToUnit: {[key:string]:number};
 }
 
 export const ACTION_PLAY = "ACTION_PLAY";
