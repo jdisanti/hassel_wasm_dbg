@@ -13,26 +13,28 @@ const initial_src_map_url: string = require('../static/os.rom.s.map');
 interface WasmEmulatorInstance { }
 
 interface WasmExports {
-    alloc: (number) => any;
-    dealloc: (any, number) => void;
+    alloc: (len: number) => number;
+    dealloc: (ptr: number, len: number) => void;
 
-    emulator_new: (any, number) => WasmEmulatorInstance;
-    emulator_delete: (WasmEmulatorInstance) => void;
+    emulator_new: (rom_ptr: number, rom_len: number) => WasmEmulatorInstance;
+    emulator_delete: (emulator_ptr: WasmEmulatorInstance) => void;
 
-    emulator_reset: (WasmEmulatorInstance) => void;
-    emulator_step: (WasmEmulatorInstance) => void;
+    emulator_reset: (emulator_ptr: WasmEmulatorInstance) => void;
+    emulator_step: (emulator_ptr: WasmEmulatorInstance) => void;
 
-    emulator_add_breakpoint: (WasmEmulatorInstance, number) => void;
-    emulator_remove_breakpoint: (WasmEmulatorInstance, number) => void;
-    emulator_remove_all_breakpoints: (WasmEmulatorInstance) => void;
-    emulator_play: (WasmEmulatorInstance, number) => boolean;
+    emulator_add_breakpoint: (emulator_ptr: WasmEmulatorInstance, address: number) => void;
+    emulator_remove_breakpoint: (emulator_ptr: WasmEmulatorInstance, address: number) => void;
+    emulator_remove_all_breakpoints: (emulator_ptr: WasmEmulatorInstance) => void;
+    emulator_play: (emulator_ptr: WasmEmulatorInstance, cycles: number) => boolean;
 
-    emulator_reg_a: (WasmEmulatorInstance) => number;
-    emulator_reg_x: (WasmEmulatorInstance) => number;
-    emulator_reg_y: (WasmEmulatorInstance) => number;
-    emulator_reg_status: (WasmEmulatorInstance) => number;
-    emulator_reg_sp: (WasmEmulatorInstance) => number;
-    emulator_reg_pc: (WasmEmulatorInstance) => number;
+    emulator_reg_a: (emulator_ptr: WasmEmulatorInstance) => number;
+    emulator_reg_x: (emulator_ptr: WasmEmulatorInstance) => number;
+    emulator_reg_y: (emulator_ptr: WasmEmulatorInstance) => number;
+    emulator_reg_status: (emulator_ptr: WasmEmulatorInstance) => number;
+    emulator_reg_sp: (emulator_ptr: WasmEmulatorInstance) => number;
+    emulator_reg_pc: (emulator_ptr: WasmEmulatorInstance) => number;
+
+    emulator_get_memory: (emulator_ptr: WasmEmulatorInstance, buffer_ptr: number) => void;
 }
 
 export class Emulator {
@@ -41,6 +43,7 @@ export class Emulator {
     private emulator: WasmEmulatorInstance;
     private playbackInterval: number | null = null;
     private playing: boolean = false;
+    private memoryPtr: number;
 
     constructor(instance: WebAssembly.Instance, rom: ArrayBuffer) {
         this.assembly_instance = instance;
@@ -56,6 +59,19 @@ export class Emulator {
         }
 
         this.emulator = this.assembly_exports.emulator_new(romPtr, rom.byteLength);
+        this.memoryPtr = this.assembly_exports.alloc(0x10000);
+    }
+
+    public getMemorySlice(start: number, end: number): number[] {
+        let memory: number[] = [];
+        if (start < end) {
+            this.assembly_exports.emulator_get_memory(this.emulator, this.memoryPtr);
+            let memoryView = new Uint8Array(this.assembly_instance.exports.memory.buffer);
+            for (let i = start; i < end; i++) {
+                memory.push(memoryView[this.memoryPtr + i]);
+            }
+        }
+        return memory;
     }
 
     public reset() {

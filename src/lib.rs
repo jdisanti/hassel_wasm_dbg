@@ -145,3 +145,20 @@ pub fn emulator_reg_pc(emulator_ptr: *mut DebuggingEmulator) -> u16 {
         emulator.cpu().reg_pc()
     })
 }
+
+#[no_mangle]
+pub fn emulator_get_memory(emulator_ptr: *mut DebuggingEmulator, buffer_ptr: *mut u8) {
+    let buffer_size: usize = 0x10000;
+    let emulator: Box<DebuggingEmulator> = unsafe { Box::from_raw(emulator_ptr) };
+    let mut buffer = unsafe { Vec::from_raw_parts(buffer_ptr, buffer_size, buffer_size) };
+
+    {
+        let bus = emulator.cpu().bus();
+        for i in 0..buffer_size {
+            buffer[i] = bus.read_byte(i as u16);
+        }
+    }
+
+    mem::forget(buffer);
+    mem::forget(emulator);
+}
