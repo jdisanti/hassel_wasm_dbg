@@ -43,9 +43,11 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                                     registerSp={state.emulator.registers.registerSp}
                                     registerPc={state.emulator.registers.registerPc} />
                                 <MemoryView
+                                    index={0}
                                     startAddress={state.emulator.memoryPages[0].startAddress}
                                     memory={state.emulator.memoryPages[0].bytes} />
                                 <MemoryView
+                                    index={1}
                                     startAddress={state.emulator.memoryPages[1].startAddress}
                                     memory={state.emulator.memoryPages[1].bytes} />
                             </div>

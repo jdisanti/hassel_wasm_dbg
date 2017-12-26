@@ -196,6 +196,13 @@ function emulatorReducer(state: EmulatorStore, action: Action): EmulatorStore {
         }
         case ACTION_UPDATE_MEMORY: {
             let pages = state.memoryPages;
+            if (action.kickoffEmulatorUpdate) {
+                setTimeout(() => {
+                    if (state.instance) {
+                        state.instance.sendUpdate();
+                    }
+                }, 0);
+            }
             return {
                 ...state,
                 memoryPages: [

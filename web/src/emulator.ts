@@ -166,6 +166,7 @@ export class Emulator {
                 page: index,
                 startAddress: page.startAddress,
                 bytes: bytes,
+                kickoffEmulatorUpdate: false,
             });
         });
 

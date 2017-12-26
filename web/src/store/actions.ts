@@ -67,6 +67,7 @@ export class ActionUpdateMemory {
     page: number;
     startAddress: number;
     bytes: number[];
+    kickoffEmulatorUpdate: boolean;
 }
 
 export type Action =
