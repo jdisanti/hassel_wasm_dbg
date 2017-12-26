@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Line, store } from '../store/store';
 import { ACTION_SET_BREAKPOINT, ACTION_CLEAR_BREAKPOINT } from '../store/actions';
+import { formatHexWord } from '../util/format';
 
 export interface SourceViewProps {
     sourceName: string,
@@ -59,8 +60,7 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
         if (address === undefined) {
             return (<pre className="address">     : </pre>);
         } else {
-            let formatted = (address + 0x10000).toString(16).substr(-4).toUpperCase();
-            return (<pre className="address">${formatted}: </pre>);
+            return (<pre className="address">{formatHexWord(address)}: </pre>);
         }
     }
 

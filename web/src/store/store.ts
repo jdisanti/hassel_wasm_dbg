@@ -11,6 +11,7 @@ import {
     ACTION_STOP,
     ACTION_SET_BREAKPOINT,
     ACTION_CLEAR_BREAKPOINT,
+    ACTION_UPDATE_MEMORY,
 } from './actions';
 import { Emulator } from '../emulator';
 
@@ -23,10 +24,16 @@ export interface RegisterStore {
     registerPc: number,
 }
 
+export interface MemoryPage {
+    startAddress: number,
+    bytes: number[],
+}
+
 export interface EmulatorStore {
     isLoading: boolean,
     instance?: Emulator,
     registers: RegisterStore,
+    memoryPages: MemoryPage[],
     isPaused: boolean,
 }
 
@@ -73,6 +80,16 @@ const initialState: RootStore = {
             registerSp: 0,
             registerPc: 0,
         },
+        memoryPages: [
+            {
+                startAddress: 0x0000,
+                bytes: [],
+            },
+            {
+                startAddress: 0xE000,
+                bytes: [],
+            }
+        ],
         isPaused: true,
     },
     src: {
@@ -100,6 +117,7 @@ function rootReducer(state: RootStore = initialState, action: Action): RootStore
         case ACTION_PAUSE:
         case ACTION_STOP:
         case ACTION_STEP:
+        case ACTION_UPDATE_MEMORY:
             return { ...state, emulator: emulatorReducer(state.emulator, action) };
         case ACTION_SET_SRC:
             return { ...state, src: srcReducer(state.src, action) };
@@ -176,9 +194,30 @@ function emulatorReducer(state: EmulatorStore, action: Action): EmulatorStore {
             }
             return state;
         }
+        case ACTION_UPDATE_MEMORY: {
+            let pages = state.memoryPages;
+            return {
+                ...state,
+                memoryPages: [
+                    memoryPageReducer(0, pages[0], action),
+                    memoryPageReducer(1, pages[1], action),
+                ]
+            };
+        }
         default:
             return state;
     }
+}
+
+function memoryPageReducer(page: number, state: MemoryPage, action: Action): MemoryPage {
+    if (action.type === ACTION_UPDATE_MEMORY && page === action.page) {
+        return {
+            ...state,
+            startAddress: action.startAddress,
+            bytes: action.bytes,
+        }
+    }
+    return state;
 }
 
 function srcReducer(state: SrcStore, action: Action): SrcStore {

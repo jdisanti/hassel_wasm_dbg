@@ -61,6 +61,14 @@ export class ActionClearBreakpoint {
     address: number;
 }
 
+export const ACTION_UPDATE_MEMORY = "ACTION_UPDATE_MEMORY";
+export class ActionUpdateMemory {
+    type: "ACTION_UPDATE_MEMORY";
+    page: number;
+    startAddress: number;
+    bytes: number[];
+}
+
 export type Action =
     ActionInit |
     ActionInitEmulator |
@@ -71,4 +79,5 @@ export type Action =
     ActionStop |
     ActionStep |
     ActionSetBreakpoint |
-    ActionClearBreakpoint;
+    ActionClearBreakpoint |
+    ActionUpdateMemory;

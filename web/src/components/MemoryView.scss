@@ -1,0 +1,29 @@
+.memory-view {
+    height: 250px;
+
+    ol {
+        padding-left: 5px;
+    }
+
+    div.card-block {
+        overflow-x: scroll;
+        overflow-y: scroll;
+    }
+
+    li {
+        white-space: nowrap;
+        list-style-type: none;
+        padding-left: 20px;
+    }
+
+    pre {
+        margin: 0;
+        overflow-x: initial;
+        overflow-y: initial;
+        display: inline-block;
+    }
+
+    pre.address {
+        color: grey;
+    }
+}

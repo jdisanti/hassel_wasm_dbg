@@ -2,6 +2,7 @@ import {
     ACTION_INIT_EMULATOR,
     ACTION_SET_SRC,
     ACTION_UPDATE_REGISTERS,
+    ACTION_UPDATE_MEMORY,
     ACTION_PAUSE,
 } from './store/actions';
 import { store } from './store/store';
@@ -157,6 +158,17 @@ export class Emulator {
     }
 
     public sendUpdate() {
+        let state = store.getState();
+        state.emulator.memoryPages.forEach((page, index) => {
+            let bytes = this.getMemorySlice(page.startAddress, page.startAddress + 0x100);
+            store.dispatch({
+                type: ACTION_UPDATE_MEMORY,
+                page: index,
+                startAddress: page.startAddress,
+                bytes: bytes,
+            });
+        });
+
         store.dispatch({
             type: ACTION_UPDATE_REGISTERS,
             registerA: this.regA(),
