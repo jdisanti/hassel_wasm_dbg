@@ -3,3 +3,7 @@
 @import "./components/SourceView";
 @import "./components/RegistersView";
 @import "./components/MemoryView";
+
+.error {
+    color: red;
+}

@@ -5,8 +5,9 @@ Hassel Wasm Emu TODO
 - [X] Breakpoints
 - [X] Show call stack pointer value
 - [X] Memory View
-- [ ] Change file under debug
+- [X] Change file under debug
 - [ ] Change address of memory views
+- [ ] Show ASCII values for memory
 - [ ] Graphics
 - [ ] Input
 - [ ] Syntax highlighting

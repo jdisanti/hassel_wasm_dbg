@@ -6,13 +6,14 @@ import SourceView from './components/SourceView';
 import DebugToolbar from './components/DebugToolbar';
 import RegistersView from './components/RegistersView';
 import MemoryView from './components/MemoryView';
+import RomSelect from './components/RomSelect';
 
 export interface RootComponentProps {
     store?: Store<RootStore>,
 }
 
 class RootComponent extends React.Component<RootComponentProps, any> {
-    render() {
+    render(): JSX.Element {
         let store = this.props.store;
         if (store) {
             let state = store.getState();
@@ -27,9 +28,9 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                 );
                 return (
                     <div className="container-fluid">
-                        <input type="file" id="rom-select" name="rom-select" onChange={this.onRomSelected} />
                         <div className="row">
                             <div className="col-7">
+                                <RomSelect />
                                 {sourceView}
                                 <DebugToolbar isPaused={state.emulator.isPaused} />
                             </div>
@@ -54,19 +55,6 @@ class RootComponent extends React.Component<RootComponentProps, any> {
             }
         }
         return (<p></p>);
-    }
-
-    onRomSelected(event) {
-        let files = event.target.files;
-        if (files.length == 1) {
-            let romFile = files[0];
-            let reader = new FileReader();
-            reader.onload = (loadEvent) => {
-                let fileContents = (loadEvent.target as any).result;
-                console.log("Rom size: ", fileContents.length);
-            };
-            reader.readAsBinaryString(romFile);
-        }
     }
 }
 

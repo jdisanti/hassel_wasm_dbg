@@ -181,48 +181,51 @@ export class Emulator {
     }
 }
 
+let wasmInstance: WebAssembly.Instance | null = null;
+
+export function loadRom(romContents: ArrayBuffer, mapContents: object) {
+    let units = mapContents['src_units']['units'];
+    let addressToUnit: {[key:string]: number} = {};
+
+    let entries = mapContents['entries'];
+    for (let entry of entries) {
+        units[entry.unit].addressToLine = units[entry.unit].addressToLine || {};
+        units[entry.unit].lineToAddress = units[entry.unit].lineToAddress || {};
+
+        units[entry.unit].addressToLine["" + entry.address] = entry.line;
+        units[entry.unit].lineToAddress["" + entry.line] = entry.address;
+
+        addressToUnit["" + entry.address] = entry.unit;
+    }
+
+    store.dispatch({
+        type: ACTION_SET_SRC,
+        units: units,
+        addressToUnit: addressToUnit,
+    });
+
+    let emulator = new Emulator(wasmInstance as WebAssembly.Instance, romContents);
+    store.dispatch({
+        type: ACTION_INIT_EMULATOR,
+        instance: emulator,
+    });
+    emulator.reset();
+}
+
 export function initEmulator() {
     fetch(wasm_url)
         .then(response => response.arrayBuffer())
-        .then(bytes => WebAssembly.instantiate(bytes, {
-            env: {
-            }
-        }))
+        .then(bytes => WebAssembly.instantiate(bytes, { env: { } }))
         .then(results => {
-            let instance = results.instance;
+            wasmInstance = results.instance;
 
             fetch(initial_src_map_url)
                 .then(response => response.json())
                 .then(srcMap => {
-                    let units = srcMap['src_units']['units'];
-                    let addressToUnit: {[key:string]: number} = {};
-
-                    let entries = srcMap['entries'];
-                    for (let entry of entries) {
-                        units[entry.unit].addressToLine = units[entry.unit].addressToLine || {};
-                        units[entry.unit].lineToAddress = units[entry.unit].lineToAddress || {};
-
-                        units[entry.unit].addressToLine["" + entry.address] = entry.line;
-                        units[entry.unit].lineToAddress["" + entry.line] = entry.address;
-
-                        addressToUnit["" + entry.address] = entry.unit;
-                    }
-
-                    store.dispatch({
-                        type: ACTION_SET_SRC,
-                        units: units,
-                        addressToUnit: addressToUnit,
-                    });
-
                     fetch(initial_rom_url)
                         .then(response => response.arrayBuffer())
                         .then(rom => {
-                            let emulator = new Emulator(instance, rom);
-                            store.dispatch({
-                                type: ACTION_INIT_EMULATOR,
-                                instance: emulator,
-                            });
-                            emulator.reset();
+                            loadRom(rom, srcMap);
                         });
                 });
         });
