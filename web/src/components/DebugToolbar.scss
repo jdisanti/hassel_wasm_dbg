@@ -1,0 +1,25 @@
+.debug-toolbar {
+    button div.pause {
+        width: 16px;
+        height: 16px;
+        background: url('./icons.gif') 48px 0px;
+    }
+
+    button div.play {
+        width: 16px;
+        height: 16px;
+        background: url('./icons.gif') 0px 0px;
+    }
+
+    button div.stop {
+        width: 16px;
+        height: 16px;
+        background: url('./icons.gif') 32px 0px;
+    }
+
+    button div.step {
+        width: 16px;
+        height: 16px;
+        background: url('./icons.gif') 16px 0px;
+    }
+}

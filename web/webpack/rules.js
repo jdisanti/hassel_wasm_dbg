@@ -1,7 +1,7 @@
 // This is file for module.rules of webpack config.
 module.exports = {
     staticContent: {
-        test: /\.(wasm|png|rom|map)$/,
+        test: /\.(wasm|gif|png|rom|map)$/,
         loaders: ['file-loader']
     },
 

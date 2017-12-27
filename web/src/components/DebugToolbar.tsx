@@ -14,18 +14,24 @@ export interface DebugToolbarProps {
 export default class DebugToolbar extends React.Component<DebugToolbarProps, any> {
     render(): JSX.Element {
         return (
-            <div className="btn-toolbar">
+            <div className="debug-toolbar btn-toolbar">
                 <div className="btn-group mr-2" role="group">
-                    <button type="button" className="btn btn-secondary" onClick={this.playPauseClick.bind(this)}>
-                        {this.props.isPaused ? "\u25BA" : "\u23F8"}
+                    <button type="button"
+                            className="btn btn-secondary"
+                            onClick={this.playPauseClick.bind(this)}>
+                        <div className={this.props.isPaused ? 'play' : 'pause'}></div>
                     </button>
-                    <button type="button" className="btn btn-secondary" onClick={this.stopClick.bind(this)}>
-                        {"\u25A0"}
+                    <button type="button"
+                            className="btn btn-secondary"
+                            onClick={this.stopClick.bind(this)}>
+                        <div className="stop"></div>
                     </button>
                 </div>
                 <div className="btn-group mr-2" role="group">
-                    <button type="button" className="btn btn-secondary" onClick={this.stepClick.bind(this)}>
-                        {"\u21e8"}
+                    <button type="button"
+                            className="btn btn-secondary"
+                            onClick={this.stepClick.bind(this)}>
+                        <div className="step"></div>
                     </button>
                 </div>
             </div>
