@@ -1,7 +1,6 @@
-use hassel_emu::bus::PeripheralBus;
+use hassel_emu::bus::{GraphicsBus, PeripheralBus};
 use hassel_emu::cpu::Cpu;
 use hassel_emu::emulator::Emulator;
-use hassel_emu::graphics_bus::GraphicsBus;
 use std::cell::{Ref, RefCell};
 use std::collections::HashSet;
 use std::rc::Rc;

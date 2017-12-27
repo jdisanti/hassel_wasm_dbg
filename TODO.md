@@ -9,5 +9,6 @@ Hassel Wasm Emu TODO
 - [X] Change address of memory views
 - [X] Show ASCII values for memory
 - [X] Graphics
+- [ ] Hotkeys
 - [ ] Input
 - [ ] Syntax highlighting

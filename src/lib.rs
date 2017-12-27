@@ -146,9 +146,9 @@ pub fn emulator_get_memory(emulator_ptr: *mut DebuggingEmulator, buffer_ptr: *mu
     let mut buffer = unsafe { Vec::from_raw_parts(buffer_ptr, buffer_size, buffer_size) };
 
     {
-        let bus = emulator.cpu().bus();
+        let debug_view = emulator.cpu().bus().debug_view();
         for i in 0..buffer_size {
-            buffer[i] = bus.read_byte(i as u16);
+            buffer[i] = debug_view.read_byte(i as u16);
         }
     }
 
