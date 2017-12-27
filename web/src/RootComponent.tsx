@@ -17,20 +17,38 @@ class RootComponent extends React.Component<RootComponentProps, any> {
     render(): JSX.Element {
         let store = this.props.store;
         if (store) {
+            let heading = (
+                <div>
+                    <h1>Hasseldorf Computer Emulator Debugger</h1>
+                    <p>
+                        The Hasseldorf Computer is a hobbyist 8-bit MOS 6502 computer.
+                        This program can emulate and debug its ROMs with source maps.
+                    </p>
+                </div>
+            );
+
             let state = store.getState();
             if (state.emulator.isLoading) {
-                return (<p>Loading...</p>);
+                return (
+                    <div>
+                        {heading}
+                        <p>Loading...</p>
+                    </div>
+                );
             } else {
+                let debugToolbar = (<DebugToolbar isPaused={state.emulator.isPaused} />);
                 let sourceView = state.src.isLoading ? (<div>Loading...</div>) : (
                     <SourceView lines={state.src.currentSrc.lines}
+                        headerToolbar={debugToolbar}
                         sourceName={state.src.currentSrc.name}
                         currentLine={state.src.currentSrc.currentLine}
                         breakpoints={state.src.breakpoints} />
                 );
                 return (
-                    <div className="container-fluid">
+                    <div className="hassel-wasm-dbg container-fluid">
                         <div className="row">
-                            <div className="col-7">
+                            <div className="col col-7">
+                                {heading}
                                 <RomSelect />
                                 <RegistersView
                                     registerA={state.emulator.registers.registerA}
@@ -40,18 +58,25 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                                     registerSp={state.emulator.registers.registerSp}
                                     registerPc={state.emulator.registers.registerPc} />
                                 {sourceView}
-                                <DebugToolbar isPaused={state.emulator.isPaused} />
                             </div>
                             <div className="col">
-                                <GraphicsView />
+                                <div className="row">
+                                    <div className="col">
+                                        <GraphicsView />
+                                    </div>
+                                    <div className="col">
                                 <MemoryView
                                     index={0}
                                     startAddress={state.emulator.memoryPages[0].startAddress}
                                     memory={state.emulator.memoryPages[0].bytes} />
+                                    </div>
+                                    <div className="col">
                                 <MemoryView
                                     index={1}
                                     startAddress={state.emulator.memoryPages[1].startAddress}
                                     memory={state.emulator.memoryPages[1].bytes} />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

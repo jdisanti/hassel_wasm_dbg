@@ -20,10 +20,10 @@ export default class RomSelect extends React.Component<RomSelectProps, RomSelect
 
     render(): JSX.Element {
         return (
-            <div className="card mb-2">
+            <div className="mb-2">
                 <p>
-                    To change the loaded ROM, click the <em>Select .ROM and .MAP</em> button
-                    below, and be sure to select both a <em>.rom</em> and a <em>.map</em> file.
+                    To change the loaded ROM, click the button below, and be sure to
+                    select both a <em>.rom</em> and a <em>.map</em> file.
                     Both are necessary for debugging.
                 </p>
                 <input type="button"

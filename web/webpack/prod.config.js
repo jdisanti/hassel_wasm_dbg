@@ -2,6 +2,7 @@ var baseConfig = require('./base.config');
 var rules = require('./rules');
 
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const extractSass = new ExtractTextPlugin({
     filename: "[name].[contenthash].css",
@@ -13,7 +14,10 @@ module.exports = {
 
 module.exports = {
     entry: baseConfig.entry,
-    output: baseConfig.output,
+    output: {
+        ...baseConfig.output,
+        filename: '[name].[hash].bundle.js',
+    },
     resolve: baseConfig.resolve,
     module: {
         rules: [
@@ -38,6 +42,9 @@ module.exports = {
     },
     plugins: [
         extractSass,
+        new HtmlWebpackPlugin({
+            template: "static/index.template.html",
+        })
     ]
 };
 

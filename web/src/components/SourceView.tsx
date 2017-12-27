@@ -8,6 +8,7 @@ export interface SourceViewProps {
     lines: Line[],
     currentLine?: number,
     breakpoints: number[],
+    headerToolbar?: JSX.Element,
 }
 
 export default class SourceView extends React.Component<SourceViewProps, any> {
@@ -15,9 +16,16 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
 
     render(): JSX.Element {
         return (
-            <div className="card source-viewport">
+            <div className="card source-viewport mb-2">
                 <div className="card-header">
-                    {this.props.sourceName}
+                    <div className="row justify-content-between">
+                        <div className="col">
+                            <strong>Code:</strong> {this.props.sourceName}
+                        </div>
+                        <div className="col-xs">
+                            {this.props.headerToolbar}
+                        </div>
+                    </div>
                 </div>
                 <div className="card-block">
                     <ol>

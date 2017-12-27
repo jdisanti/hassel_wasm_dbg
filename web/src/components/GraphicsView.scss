@@ -1,0 +1,11 @@
+div.graphics-view {
+    background-color: #444;
+    width: 100%;
+    border-radius: 5px;
+}
+
+.graphics-view canvas{
+    width: 640px;
+    margin: 0.5rem auto 0.5rem auto;
+    display: block;
+}

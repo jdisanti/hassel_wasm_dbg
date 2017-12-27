@@ -1,10 +1,18 @@
 @import "~bootstrap/dist/css/bootstrap";
 
 @import "./components/DebugToolbar";
-@import "./components/SourceView";
-@import "./components/RegistersView";
+@import "./components/GraphicsView";
 @import "./components/MemoryView";
+@import "./components/RegistersView";
+@import "./components/SourceView";
 
-.error {
-    color: red;
+.hassel-wasm-dbg {
+    .card-header {
+        padding-bottom: 0.25rem;
+        padding-top: 0.25rem;
+    }
+
+    .error {
+        color: red;
+    }
 }

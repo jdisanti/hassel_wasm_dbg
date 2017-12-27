@@ -25,7 +25,11 @@ export default class GraphicsView extends React.Component<GraphicsViewProps, any
 
     render(): JSX.Element {
         return (
-            <canvas ref={(canvas) => this.canvas = canvas} width="640" height="480" />
+            <div className="graphics-view">
+                <canvas ref={(canvas) => this.canvas = canvas}
+                        width="640"
+                        height="480" />
+            </div>
         )
     }
 }
