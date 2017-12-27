@@ -17,6 +17,7 @@ type MemoryViewState = {
 type ByteLine = {
     address: string,
     bytes: string,
+    ascii: string,
 }
 
 export default class MemoryView extends React.Component<MemoryViewProps, any> {
@@ -43,8 +44,7 @@ export default class MemoryView extends React.Component<MemoryViewProps, any> {
                                size={2}
                                maxLength={2}
                                value={this.state.enteredPage}
-                               onChange={this.pageChanged.bind(this)}
-                               onBlur={this.pageChanged.bind(this)} />
+                               onChange={this.pageChanged.bind(this)} />
                         <span className="error">{this.state.error}</span>
                     </div>
                     <div className="memory">
@@ -88,7 +88,7 @@ export default class MemoryView extends React.Component<MemoryViewProps, any> {
         return (
             <li key={line.address}>
                 <pre className="address">{line.address}: </pre>
-                <pre>{line.bytes}</pre>
+                <pre>{line.bytes}  {line.ascii}</pre>
             </li>
         );
     }
@@ -97,19 +97,25 @@ export default class MemoryView extends React.Component<MemoryViewProps, any> {
         let memory = this.props.memory;
         let lines: ByteLine[] = [];
 
-        let line = "";
+        let hexLine = "", asciiLine = "";
         let address = this.props.startAddress;
         for (let i = 0; i < memory.length; i++) {
-            line += formatHexByte(memory[i], false);
+            hexLine += formatHexByte(memory[i], false);
+            if (memory[i] >= 0x20 && memory[i] <= 0x7E) {
+                asciiLine += String.fromCharCode(memory[i]);
+            } else {
+                asciiLine += '.';
+            }
             if ((i + 1) % width === 0) {
                 lines.push({
                     address: formatHexWord(address),
-                    bytes: line,
+                    bytes: hexLine,
+                    ascii: asciiLine,
                 });
-                line = "";
+                asciiLine = hexLine = "";
                 address += width;
             } else {
-                line += ' ';
+                hexLine += ' ';
             }
         }
         return lines;

@@ -7,7 +7,7 @@ Hassel Wasm Emu TODO
 - [X] Memory View
 - [X] Change file under debug
 - [X] Change address of memory views
-- [ ] Show ASCII values for memory
+- [X] Show ASCII values for memory
 - [ ] Graphics
 - [ ] Input
 - [ ] Syntax highlighting
