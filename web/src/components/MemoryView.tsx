@@ -33,20 +33,16 @@ export default class MemoryView extends React.Component<MemoryViewProps, any> {
         return (
             <div className="card memory-view mb-2">
                 <div className="card-header">
-                    <strong>Memory Page at 0x{formatHexWord(this.props.startAddress, false)}</strong>
+                    <strong>Memory Page at </strong>
+                    <input type="text"
+                            className="mr-2"
+                            size={2}
+                            maxLength={2}
+                            value={this.state.enteredPage}
+                            onChange={this.pageChanged.bind(this)} />
+                    <span className="error">{this.state.error}</span>
                 </div>
                 <div className="card-block p-2">
-                    <div>
-                        <label htmlFor="page" className="mr-2">Page:</label>
-                        <input type="text"
-                               name="page"
-                               className="mr-2"
-                               size={2}
-                               maxLength={2}
-                               value={this.state.enteredPage}
-                               onChange={this.pageChanged.bind(this)} />
-                        <span className="error">{this.state.error}</span>
-                    </div>
                     <div className="memory">
                         {this.renderBytes()}
                     </div>
