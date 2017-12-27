@@ -1,8 +1,4 @@
-use std::rc::Rc;
-use std::cell::RefCell;
-
 extern crate hassel_emu;
-use hassel_emu::bus::PlaceholderBus;
 
 mod debug;
 use debug::{DebuggingEmulator, StepResult};
@@ -32,10 +28,7 @@ pub fn emulator_new(rom_ptr: *mut u8, rom_length: usize) -> *mut DebuggingEmulat
     } else {
         vec![0; 0x2000]
     };
-    let emulator = Box::new(DebuggingEmulator::new(
-        rom,
-        Rc::new(RefCell::new(PlaceholderBus::new("test".into()))),
-    ));
+    let emulator = Box::new(DebuggingEmulator::new(rom));
     Box::into_raw(emulator)
 }
 
@@ -156,6 +149,24 @@ pub fn emulator_get_memory(emulator_ptr: *mut DebuggingEmulator, buffer_ptr: *mu
         let bus = emulator.cpu().bus();
         for i in 0..buffer_size {
             buffer[i] = bus.read_byte(i as u16);
+        }
+    }
+
+    mem::forget(buffer);
+    mem::forget(emulator);
+}
+
+#[no_mangle]
+pub fn emulator_get_graphics_data(emulator_ptr: *mut DebuggingEmulator, buffer_ptr: *mut u32) {
+    let buffer_size = 640 * 480;
+    let emulator: Box<DebuggingEmulator> = unsafe { Box::from_raw(emulator_ptr) };
+    let mut buffer = unsafe { Vec::from_raw_parts(buffer_ptr, buffer_size, buffer_size) };
+
+    {
+        let graphics_bus = emulator.graphics_bus();
+        let frame_buffer = graphics_bus.frame_buffer();
+        for i in 0..buffer_size {
+            buffer[i] = frame_buffer[i];
         }
     }
 

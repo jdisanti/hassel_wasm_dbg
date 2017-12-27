@@ -7,6 +7,7 @@ import DebugToolbar from './components/DebugToolbar';
 import RegistersView from './components/RegistersView';
 import MemoryView from './components/MemoryView';
 import RomSelect from './components/RomSelect';
+import GraphicsView from './components/GraphicsView';
 
 export interface RootComponentProps {
     store?: Store<RootStore>,
@@ -31,10 +32,6 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                         <div className="row">
                             <div className="col-7">
                                 <RomSelect />
-                                {sourceView}
-                                <DebugToolbar isPaused={state.emulator.isPaused} />
-                            </div>
-                            <div className="col">
                                 <RegistersView
                                     registerA={state.emulator.registers.registerA}
                                     registerS={state.emulator.registers.registerS}
@@ -42,6 +39,11 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                                     registerY={state.emulator.registers.registerY}
                                     registerSp={state.emulator.registers.registerSp}
                                     registerPc={state.emulator.registers.registerPc} />
+                                {sourceView}
+                                <DebugToolbar isPaused={state.emulator.isPaused} />
+                            </div>
+                            <div className="col">
+                                <GraphicsView />
                                 <MemoryView
                                     index={0}
                                     startAddress={state.emulator.memoryPages[0].startAddress}

@@ -36,7 +36,13 @@ interface WasmExports {
     emulator_reg_pc: (emulator_ptr: WasmEmulatorInstance) => number;
 
     emulator_get_memory: (emulator_ptr: WasmEmulatorInstance, buffer_ptr: number) => void;
+    emulator_get_graphics_data: (emulator_ptr: WasmEmulatorInstance, buffer_ptr: number) => void;
 }
+
+const GRAPHICS_WIDTH = 640;
+const GRAPHICS_HEIGHT = 480;
+const GRAPHICS_BUFFER_SIZE = GRAPHICS_WIDTH * GRAPHICS_HEIGHT * 4;
+const MEMORY_VIEW_BUFFER_SIZE = 0x10000;
 
 export class Emulator {
     private assembly_instance: WebAssembly.Instance;
@@ -45,6 +51,8 @@ export class Emulator {
     private playbackInterval: number | null = null;
     private playing: boolean = false;
     private memoryPtr: number;
+
+    private graphicsPtr: number;
 
     constructor(instance: WebAssembly.Instance, rom: ArrayBuffer) {
         this.assembly_instance = instance;
@@ -60,7 +68,23 @@ export class Emulator {
         }
 
         this.emulator = this.assembly_exports.emulator_new(romPtr, rom.byteLength);
-        this.memoryPtr = this.assembly_exports.alloc(0x10000);
+        this.memoryPtr = this.assembly_exports.alloc(MEMORY_VIEW_BUFFER_SIZE);
+
+        this.graphicsPtr = this.assembly_exports.alloc(GRAPHICS_BUFFER_SIZE);
+    }
+
+    public destroy() {
+        this.assembly_exports.dealloc(this.memoryPtr, MEMORY_VIEW_BUFFER_SIZE);
+        this.assembly_exports.dealloc(this.graphicsPtr, GRAPHICS_BUFFER_SIZE);
+        this.assembly_exports.emulator_delete(this.emulator);
+    }
+
+    public getGraphicsData(): ImageData {
+        return new ImageData(new Uint8ClampedArray(
+            this.assembly_instance.exports.memory.buffer,
+            this.graphicsPtr,
+            GRAPHICS_BUFFER_SIZE
+        ), GRAPHICS_WIDTH, GRAPHICS_HEIGHT);
     }
 
     public getMemorySlice(start: number, end: number): number[] {
@@ -73,6 +97,10 @@ export class Emulator {
             }
         }
         return memory;
+    }
+
+    public updateGraphics() {
+        this.assembly_exports.emulator_get_graphics_data(this.emulator, this.graphicsPtr);
     }
 
     public reset() {
@@ -109,9 +137,9 @@ export class Emulator {
         if (!this.playing) {
             this.playing = true;
 
-            // 60,000 cycles should execute in 10 milliseconds for semi-accurate timing
-            let cyclesPerInterval = 60000;
-            let interval = 10;
+            // 600,000 cycles should execute in 100 milliseconds for semi-accurate timing
+            let cyclesPerInterval = 600000;
+            let interval = 100;
 
             let timeoutMethod = () => {
                 if (this.playing) {
@@ -158,6 +186,8 @@ export class Emulator {
     }
 
     public sendUpdate() {
+        this.updateGraphics();
+
         let state = store.getState();
         state.emulator.memoryPages.forEach((page, index) => {
             let bytes = this.getMemorySlice(page.startAddress, page.startAddress + 0x100);
@@ -178,7 +208,7 @@ export class Emulator {
             registerY: this.regY(),
             registerSp: this.regSp(),
             registerPc: this.regPc(),
-        })
+        });
     }
 }
 
@@ -197,6 +227,11 @@ export function loadRom(romContents: ArrayBuffer, mapContents: object) {
         units[entry.unit].lineToAddress["" + entry.line] = entry.address;
 
         addressToUnit["" + entry.address] = entry.unit;
+    }
+
+    let state = store.getState();
+    if (state.emulator.instance !== undefined) {
+        state.emulator.instance.destroy();
     }
 
     store.dispatch({

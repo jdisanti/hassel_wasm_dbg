@@ -8,6 +8,6 @@ Hassel Wasm Emu TODO
 - [X] Change file under debug
 - [X] Change address of memory views
 - [X] Show ASCII values for memory
-- [ ] Graphics
+- [X] Graphics
 - [ ] Input
 - [ ] Syntax highlighting
