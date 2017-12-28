@@ -82,11 +82,7 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
 
     componentDidUpdate(previousProps) {
         if (this.props.currentLine !== previousProps.currentLine && this.currentLine) {
-            this.currentLine.scrollIntoView({
-                behavior: "instant",
-                block: "nearest",
-                inline: "nearest",
-            });
+            this.currentLine.scrollIntoView(false);
         }
     }
 }

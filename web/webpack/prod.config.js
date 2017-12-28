@@ -10,9 +10,6 @@ const extractSass = new ExtractTextPlugin({
 });
 
 module.exports = {
-};
-
-module.exports = {
     entry: baseConfig.entry,
     output: {
         ...baseConfig.output,
@@ -47,4 +44,3 @@ module.exports = {
         })
     ]
 };
-
