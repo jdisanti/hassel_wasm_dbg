@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { loadRom } from '../emulator';
+import { Keyboard, KeyboardEventType, KeyboardHandlerPriority, KeyboardHandlerResult } from '../util/keyboard';
 
 export interface RomSelectProps {
 }
@@ -41,6 +42,18 @@ export default class RomSelect extends React.Component<RomSelectProps, RomSelect
                 <p className="error">{this.state.error}</p>
             </div>
         );
+    }
+
+    componentDidMount() {
+        Keyboard.addKeyHandler(KeyboardHandlerPriority.GlobalHotkey, (type: KeyboardEventType, event: KeyboardEvent) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
+                if (type === KeyboardEventType.Up) {
+                    this.selectClicked();
+                }
+                return KeyboardHandlerResult.Handled;
+            }
+            return KeyboardHandlerResult.Unhandled;
+        });
     }
 
     selectClicked() {

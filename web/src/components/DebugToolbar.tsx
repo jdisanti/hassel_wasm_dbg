@@ -6,6 +6,7 @@ import {
     ACTION_STEP,
 } from "../store/actions";
 import { store } from '../store/store';
+import { Keyboard, KeyboardEventType, KeyboardHandlerPriority, KeyboardHandlerResult } from '../util/keyboard';
 
 export interface DebugToolbarProps {
     isPaused: boolean,
@@ -36,6 +37,30 @@ export default class DebugToolbar extends React.Component<DebugToolbarProps, any
                 </div>
             </div>
         );
+    }
+
+    componentDidMount() {
+        Keyboard.addKeyHandler(KeyboardHandlerPriority.GlobalHotkey, (type: KeyboardEventType, event: KeyboardEvent) => {
+            switch (event.code) {
+                case "F10":
+                    if (type == KeyboardEventType.Up) {
+                        this.playPauseClick();
+                    }
+                    return KeyboardHandlerResult.Handled;
+                case "F11":
+                    if (type == KeyboardEventType.Up) {
+                        this.stopClick();
+                    }
+                    return KeyboardHandlerResult.Handled;
+                case "F12":
+                    if (type == KeyboardEventType.Up) {
+                        this.stepClick();
+                    }
+                    return KeyboardHandlerResult.Handled;
+                default:
+                    return KeyboardHandlerResult.Unhandled;
+            }
+        });
     }
 
     playPauseClick() {

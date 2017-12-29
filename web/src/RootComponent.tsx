@@ -8,6 +8,7 @@ import RegistersView from './components/RegistersView';
 import MemoryView from './components/MemoryView';
 import RomSelect from './components/RomSelect';
 import GraphicsView from './components/GraphicsView';
+import MoreInfo from './components/MoreInfo';
 
 export interface RootComponentProps {
     store?: Store<RootStore>,
@@ -22,7 +23,8 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                     <h1>Hasseldorf Computer Debugger Emulator</h1>
                     <p>
                         The Hasseldorf Computer is a hobbyist 8-bit MOS 6502 computer.
-                        This program can emulate and debug its ROMs with source maps.
+                        This program can emulate and debug its ROMs with source maps.{' '}
+                        <MoreInfo />
                     </p>
                 </div>
             );

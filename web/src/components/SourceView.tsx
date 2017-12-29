@@ -94,7 +94,6 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
     private scrollIntoView(container: HTMLElement, element: HTMLElement) {
         let elemRect = element.getBoundingClientRect();
         let containerRect = container.getBoundingClientRect();
-        console.log("elemRect", elemRect, "containerRect", containerRect);
         if (elemRect.bottom >= containerRect.bottom) {
             element.scrollIntoView(false);
         }
