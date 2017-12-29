@@ -11,6 +11,12 @@ export class ActionInitEmulator {
     instance: Emulator;
 }
 
+export const ACTION_UPDATE_CYCLES = "ACTION_UPDATE_CYCLES";
+export class ActionUpdateCycles {
+    type: "ACTION_UPDATE_CYCLES";
+    addCycles: number;
+}
+
 export const ACTION_UPDATE_REGISTERS = "ACTION_UPDATE_REGISTERS";
 export class ActionUpdateRegisters {
     type: "ACTION_UPDATE_REGISTERS";
@@ -73,6 +79,7 @@ export class ActionUpdateMemory {
 export type Action =
     ActionInit |
     ActionInitEmulator |
+    ActionUpdateCycles |
     ActionUpdateRegisters |
     ActionSetSrc |
     ActionPlay |

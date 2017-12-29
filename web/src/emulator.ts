@@ -1,6 +1,7 @@
 import {
     ACTION_INIT_EMULATOR,
     ACTION_SET_SRC,
+    ACTION_UPDATE_CYCLES,
     ACTION_UPDATE_REGISTERS,
     ACTION_UPDATE_MEMORY,
     ACTION_PAUSE,
@@ -21,12 +22,12 @@ interface WasmExports {
     emulator_delete: (emulator_ptr: WasmEmulatorInstance) => void;
 
     emulator_reset: (emulator_ptr: WasmEmulatorInstance) => void;
-    emulator_step: (emulator_ptr: WasmEmulatorInstance) => void;
+    emulator_step: (emulator_ptr: WasmEmulatorInstance) => number;
 
     emulator_add_breakpoint: (emulator_ptr: WasmEmulatorInstance, address: number) => void;
     emulator_remove_breakpoint: (emulator_ptr: WasmEmulatorInstance, address: number) => void;
     emulator_remove_all_breakpoints: (emulator_ptr: WasmEmulatorInstance) => void;
-    emulator_play: (emulator_ptr: WasmEmulatorInstance, cycles: number) => boolean;
+    emulator_play: (emulator_ptr: WasmEmulatorInstance, cycles: number) => number;
 
     emulator_reg_a: (emulator_ptr: WasmEmulatorInstance) => number;
     emulator_reg_x: (emulator_ptr: WasmEmulatorInstance) => number;
@@ -106,14 +107,15 @@ export class Emulator {
     public reset() {
         if (!this.playing) {
             this.assembly_exports.emulator_reset(this.emulator);
-            this.sendUpdate();
+            let state = store.getState();
+            this.sendUpdate(-state.emulator.cycles);
         }
     }
 
     public step() {
         if (!this.playing) {
-            this.assembly_exports.emulator_step(this.emulator);
-            this.sendUpdate();
+            let cycles = this.assembly_exports.emulator_step(this.emulator);
+            this.sendUpdate(cycles);
         }
     }
 
@@ -129,7 +131,7 @@ export class Emulator {
         this.assembly_exports.emulator_remove_all_breakpoints(this.emulator);
     }
 
-    private play(cycles: number): boolean {
+    private play(cycles: number): number {
         return this.assembly_exports.emulator_play(this.emulator, cycles);
     }
 
@@ -137,28 +139,53 @@ export class Emulator {
         if (!this.playing) {
             this.playing = true;
 
-            // 600,000 cycles should execute in 100 milliseconds for semi-accurate timing
-            let cyclesPerInterval = 600000;
-            let interval = 100;
+            // Run a set amount of cycles every 25 milliseconds to try and
+            // simulate 6 megahertz that the actual machine would run at
+            let cyclesPerSecond = 6000000; // 6 MHz
+            let updateLength = 10; // milliseconds
+            let cyclesPerUpdate = cyclesPerSecond / (1000 / updateLength);
 
-            let timeoutMethod = () => {
+            let timeLastUpdate: number | null = null;
+            let updateMethod = (timestamp) => {
+                if (timeLastUpdate == null) {
+                    timeLastUpdate = timestamp;
+                    requestAnimationFrame(updateMethod);
+                    return;
+                }
                 if (this.playing) {
-                    if (this.play(cyclesPerInterval)) {
-                        store.dispatch({ type: ACTION_PAUSE });
-                    } else {
-                        setTimeout(timeoutMethod, interval);
+                    let now = new Date();
+                    let timeDelta = timestamp - timeLastUpdate;
+                    if (timeDelta / updateLength > 10) {
+                        timeDelta = 5;
                     }
+
+                    let totalCyclesRun = 0;
+                    while (timeDelta >= updateLength) {
+                        let cycles = this.play(cyclesPerUpdate);
+                        let hitBreakpoint = cycles < cyclesPerUpdate;
+                        totalCyclesRun += cycles;
+
+                        timeLastUpdate = timestamp;
+                        if (hitBreakpoint) {
+                            store.dispatch({ type: ACTION_PAUSE });
+                            return;
+                        }
+                        timeDelta -= updateLength;
+                    }
+                    if (totalCyclesRun > 0) {
+                        this.sendMinimalUpdate(totalCyclesRun);
+                    }
+                    requestAnimationFrame(updateMethod);
                 } else {
                     this.sendUpdate();
                 }
-            }
-            setTimeout(timeoutMethod, interval);
+            };
+            requestAnimationFrame(updateMethod);
         }
     }
 
     public stopPlayback() {
         this.playing = false;
-        this.sendUpdate();
     }
 
     public regA(): number {
@@ -185,8 +212,18 @@ export class Emulator {
         return this.assembly_exports.emulator_reg_pc(this.emulator);
     }
 
-    public sendUpdate() {
+    public sendMinimalUpdate(cycles: number) {
         this.updateGraphics();
+        store.dispatch({
+            type: ACTION_UPDATE_CYCLES,
+            addCycles: cycles
+        });
+    }
+
+    public sendUpdate(cycles?: number) {
+        if (cycles) {
+            this.sendMinimalUpdate(cycles);
+        }
 
         let state = store.getState();
         state.emulator.memoryPages.forEach((page, index) => {

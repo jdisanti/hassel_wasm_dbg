@@ -8,6 +8,7 @@ export interface SourceViewProps {
     lines: Line[],
     currentLine?: number,
     breakpoints: number[],
+    registersBar?: JSX.Element,
     headerToolbar?: JSX.Element,
 }
 
@@ -28,9 +29,12 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
                     </div>
                 </div>
                 <div className="card-block">
-                    <ol>
-                        {this.props.lines.map((line, index) => this.renderLine(line, index + 1))}
-                    </ol>
+                    {this.props.registersBar}
+                    <div className="scroll-region">
+                        <ol>
+                            {this.props.lines.map((line, index) => this.renderLine(line, index + 1))}
+                        </ol>
+                    </div>
                 </div>
             </div>
         );

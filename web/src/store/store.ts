@@ -12,6 +12,7 @@ import {
     ACTION_SET_BREAKPOINT,
     ACTION_CLEAR_BREAKPOINT,
     ACTION_UPDATE_MEMORY,
+    ACTION_UPDATE_CYCLES,
 } from './actions';
 import { Emulator } from '../emulator';
 
@@ -32,6 +33,7 @@ export interface MemoryPage {
 export interface EmulatorStore {
     isLoading: boolean,
     instance?: Emulator,
+    cycles: number,
     registers: RegisterStore,
     memoryPages: MemoryPage[],
     isPaused: boolean,
@@ -72,6 +74,7 @@ export interface RootStore {
 const initialState: RootStore = {
     emulator: {
         isLoading: true,
+        cycles: 0,
         registers: {
             registerA: 0,
             registerS: 0,
@@ -117,6 +120,7 @@ function rootReducer(state: RootStore = initialState, action: Action): RootStore
         case ACTION_PAUSE:
         case ACTION_STOP:
         case ACTION_STEP:
+        case ACTION_UPDATE_CYCLES:
         case ACTION_UPDATE_MEMORY:
             return { ...state, emulator: emulatorReducer(state.emulator, action) };
         case ACTION_SET_SRC:
@@ -138,6 +142,11 @@ function emulatorReducer(state: EmulatorStore, action: Action): EmulatorStore {
     switch (action.type) {
         case ACTION_INIT_EMULATOR:
             return { ...state, isLoading: false, instance: action.instance };
+        case ACTION_UPDATE_CYCLES:
+            return {
+                ...state,
+                cycles: state.cycles + action.addCycles,
+            }
         case ACTION_UPDATE_REGISTERS:
             return {
                 ...state,

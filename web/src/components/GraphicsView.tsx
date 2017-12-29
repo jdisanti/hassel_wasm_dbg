@@ -7,17 +7,17 @@ export interface GraphicsViewProps {
 export default class GraphicsView extends React.Component<GraphicsViewProps, any> {
     private canvas: HTMLCanvasElement | null;
     private graphicsContext: CanvasRenderingContext2D | null;
-    private lastPc: number = 0;
+    private lastCycles: number = 0;
 
     componentDidMount() {
         this.graphicsContext = (this.canvas as HTMLCanvasElement).getContext("2d");
         store.subscribe(() => {
             let state = store.getState();
             if (state.emulator.instance) {
-                if (state.emulator.registers.registerPc !== this.lastPc) {
+                if (state.emulator.cycles !== this.lastCycles) {
                     let imageData: ImageData = state.emulator.instance.getGraphicsData();
                     (this.graphicsContext as CanvasRenderingContext2D).putImageData(imageData, 0, 0);
-                    this.lastPc = state.emulator.registers.registerPc;
+                    this.lastCycles = state.emulator.cycles;
                 }
             }
         });

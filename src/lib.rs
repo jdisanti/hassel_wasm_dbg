@@ -54,10 +54,13 @@ pub fn emulator_reset(emulator_ptr: *mut DebuggingEmulator) {
 }
 
 #[no_mangle]
-pub fn emulator_step(emulator_ptr: *mut DebuggingEmulator) {
+pub fn emulator_step(emulator_ptr: *mut DebuggingEmulator) -> usize {
     with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
-        emulator.step();
-    });
+        match emulator.step() {
+            StepResult::Ok(cycles) => cycles,
+            StepResult::HitBreakpoint(cycles, _) => cycles,
+        }
+    })
 }
 
 #[no_mangle]
@@ -82,18 +85,19 @@ pub fn emulator_remove_all_breakpoints(emulator_ptr: *mut DebuggingEmulator) {
 }
 
 #[no_mangle]
-pub fn emulator_play(emulator_ptr: *mut DebuggingEmulator, cycles: usize) -> bool {
+pub fn emulator_play(emulator_ptr: *mut DebuggingEmulator, cycles: usize) -> usize {
     with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         let mut cycles_run = 0;
         while cycles_run < cycles {
             cycles_run += match emulator.step() {
                 StepResult::Ok(cycles) => cycles,
-                StepResult::HitBreakpoint(_cycles, _pc) => {
-                    return true;
+                StepResult::HitBreakpoint(cycles, _pc) => {
+                    cycles_run += cycles;
+                    return cycles_run
                 }
             }
         }
-        false
+        cycles_run
     })
 }
 

@@ -1,7 +1,6 @@
 .source-viewport {
-    height: 600px;
-
-    div.card-block {
+    div.scroll-region {
+        height: 685px;
         overflow-x: scroll;
         overflow-y: scroll;
     }

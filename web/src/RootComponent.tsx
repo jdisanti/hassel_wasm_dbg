@@ -19,7 +19,7 @@ class RootComponent extends React.Component<RootComponentProps, any> {
         if (store) {
             let heading = (
                 <div>
-                    <h1>Hasseldorf Computer Emulator Debugger</h1>
+                    <h1>Hasseldorf Computer Debugger Emulator</h1>
                     <p>
                         The Hasseldorf Computer is a hobbyist 8-bit MOS 6502 computer.
                         This program can emulate and debug its ROMs with source maps.
@@ -37,8 +37,19 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                 );
             } else {
                 let debugToolbar = (<DebugToolbar isPaused={state.emulator.isPaused} />);
+                let registersView = (
+                    <RegistersView
+                        registerA={state.emulator.registers.registerA}
+                        registerS={state.emulator.registers.registerS}
+                        registerX={state.emulator.registers.registerX}
+                        registerY={state.emulator.registers.registerY}
+                        registerSp={state.emulator.registers.registerSp}
+                        registerPc={state.emulator.registers.registerPc}
+                        cycles={state.emulator.cycles} />
+                );
                 let sourceView = state.src.isLoading ? (<div>Loading...</div>) : (
                     <SourceView lines={state.src.currentSrc.lines}
+                        registersBar={registersView}
                         headerToolbar={debugToolbar}
                         sourceName={state.src.currentSrc.name}
                         currentLine={state.src.currentSrc.currentLine}
@@ -50,13 +61,6 @@ class RootComponent extends React.Component<RootComponentProps, any> {
                             <div className="col col-7">
                                 {heading}
                                 <RomSelect />
-                                <RegistersView
-                                    registerA={state.emulator.registers.registerA}
-                                    registerS={state.emulator.registers.registerS}
-                                    registerX={state.emulator.registers.registerX}
-                                    registerY={state.emulator.registers.registerY}
-                                    registerSp={state.emulator.registers.registerSp}
-                                    registerPc={state.emulator.registers.registerPc} />
                                 {sourceView}
                             </div>
                             <div className="col">
