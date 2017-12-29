@@ -13,6 +13,7 @@ export interface SourceViewProps {
 }
 
 export default class SourceView extends React.Component<SourceViewProps, any> {
+    private scrollRegion: HTMLDivElement | null = null;
     private currentLine: HTMLLIElement | null = null;
 
     render(): JSX.Element {
@@ -30,7 +31,7 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
                 </div>
                 <div className="card-block">
                     {this.props.registersBar}
-                    <div className="scroll-region">
+                    <div ref={(elem) => this.scrollRegion = elem} className="scroll-region">
                         <ol>
                             {this.props.lines.map((line, index) => this.renderLine(line, index + 1))}
                         </ol>
@@ -85,8 +86,20 @@ export default class SourceView extends React.Component<SourceViewProps, any> {
     }
 
     componentDidUpdate(previousProps) {
-        if (this.props.currentLine !== previousProps.currentLine && this.currentLine) {
-            this.currentLine.scrollIntoView(false);
+        if (this.props.currentLine !== previousProps.currentLine && this.currentLine && this.scrollRegion) {
+            this.scrollIntoView(this.scrollRegion, this.currentLine);
+        }
+    }
+
+    private scrollIntoView(container: HTMLElement, element: HTMLElement) {
+        let elemRect = element.getBoundingClientRect();
+        let containerRect = container.getBoundingClientRect();
+        console.log("elemRect", elemRect, "containerRect", containerRect);
+        if (elemRect.bottom >= containerRect.bottom) {
+            element.scrollIntoView(false);
+        }
+        if (elemRect.top < 0) {
+            element.scrollIntoView();
         }
     }
 }
