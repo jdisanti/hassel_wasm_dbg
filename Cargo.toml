@@ -10,3 +10,4 @@ crate-type = ["cdylib"]
 
 [dependencies.hassel_emu]
 path = "../hassel_emu"
+features = ["hassel_arch"]

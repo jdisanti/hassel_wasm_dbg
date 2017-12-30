@@ -1,4 +1,4 @@
-use hassel_emu::bus::{GraphicsBus, IOBus, Key, PeripheralBus};
+use hassel_emu::hassel::{GraphicsBus, IOBus, Key, PeripheralBus};
 use hassel_emu::cpu::Cpu;
 use hassel_emu::emulator::Emulator;
 use std::cell::{Ref, RefCell};
@@ -55,7 +55,7 @@ impl DebuggingEmulator {
 
     pub fn step(&mut self) -> StepResult {
         let cycles = self.emulator.step();
-        let pc = self.emulator.cpu().reg_pc();
+        let pc = self.emulator.cpu().registers().pc;
         if self.breakpoints.contains(&pc) {
             StepResult::HitBreakpoint(cycles, pc)
         } else {
