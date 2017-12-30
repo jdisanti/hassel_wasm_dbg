@@ -11,6 +11,6 @@ Hassel Wasm Emu TODO
 - [X] Graphics
 - [X] Hotkeys
 - [X] Input
-- [ ] Bug: Hitting a breakpoint doesn't refresh the source view
+- [X] Bug: Hitting a breakpoint doesn't refresh the source view
 - [ ] All keyboard keys -> key code
 - [ ] Syntax highlighting

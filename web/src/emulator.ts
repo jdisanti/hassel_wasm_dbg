@@ -125,13 +125,11 @@ export class Emulator {
     public keyDown(key: string) {
         let keyCode = keyToKeyCode(key);
         this.assembly_exports.emulator_key_down(this.emulator, keyCode);
-        console.log("keyDown", key, keyCode);
     }
 
     public keyUp(key: string) {
         let keyCode = keyToKeyCode(key);
         this.assembly_exports.emulator_key_up(this.emulator, keyCode);
-        console.log("keyUp", key, keyCode);
     }
 
     public addBreakpoint(address: number) {
@@ -201,6 +199,7 @@ export class Emulator {
 
     public stopPlayback() {
         this.playing = false;
+        this.sendUpdate();
     }
 
     public regA(): number {
@@ -276,8 +275,10 @@ function keyToKeyCode(key: string): number {
         case "ArrowLeft": return 147;
         case "ArrowRight": return 148;
         case "ArrowUp": return 149;
-        // TODO: Other keys
-        default: return 255;
+        default:
+            // TODO: Other keys
+            console.log("Key ", key, " hasn't had a key code translation implemented yet");
+            return 255;
     }
 }
 
