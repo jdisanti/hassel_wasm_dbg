@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { store } from '../store/store';
+import { Keyboard, KeyboardEventType, KeyboardHandlerPriority, KeyboardHandlerResult } from '../util/keyboard';
 
 export interface GraphicsViewProps {
 }
@@ -20,6 +21,21 @@ export default class GraphicsView extends React.Component<GraphicsViewProps, any
                     this.lastCycles = state.emulator.cycles;
                 }
             }
+        });
+
+        Keyboard.addKeyHandler(KeyboardHandlerPriority.GraphicsView, (type: KeyboardEventType, event: KeyboardEvent) => {
+            if (document.querySelector('.graphics-view:hover') === null) {
+                return KeyboardHandlerResult.Unhandled;
+            }
+            let state = store.getState();
+            if (state.emulator.instance) {
+                if (type === KeyboardEventType.Down) {
+                    state.emulator.instance.keyDown(event.key);
+                } else {
+                    state.emulator.instance.keyUp(event.key);
+                }
+            }
+            return KeyboardHandlerResult.Handled;
         });
     }
 

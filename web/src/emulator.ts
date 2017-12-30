@@ -24,6 +24,9 @@ interface WasmExports {
     emulator_reset: (emulator_ptr: WasmEmulatorInstance) => void;
     emulator_step: (emulator_ptr: WasmEmulatorInstance) => number;
 
+    emulator_key_down: (emulator_ptr: WasmEmulatorInstance, key_code: number) => void;
+    emulator_key_up: (emulator_ptr: WasmEmulatorInstance, key_code: number) => void;
+
     emulator_add_breakpoint: (emulator_ptr: WasmEmulatorInstance, address: number) => void;
     emulator_remove_breakpoint: (emulator_ptr: WasmEmulatorInstance, address: number) => void;
     emulator_remove_all_breakpoints: (emulator_ptr: WasmEmulatorInstance) => void;
@@ -117,6 +120,18 @@ export class Emulator {
             let cycles = this.assembly_exports.emulator_step(this.emulator);
             this.sendUpdate(cycles);
         }
+    }
+
+    public keyDown(key: string) {
+        let keyCode = keyToKeyCode(key);
+        this.assembly_exports.emulator_key_down(this.emulator, keyCode);
+        console.log("keyDown", key, keyCode);
+    }
+
+    public keyUp(key: string) {
+        let keyCode = keyToKeyCode(key);
+        this.assembly_exports.emulator_key_up(this.emulator, keyCode);
+        console.log("keyUp", key, keyCode);
     }
 
     public addBreakpoint(address: number) {
@@ -246,6 +261,23 @@ export class Emulator {
             registerSp: this.regSp(),
             registerPc: this.regPc(),
         });
+    }
+}
+
+function keyToKeyCode(key: string): number {
+    if (key.length === 1) {
+        return key.toUpperCase().charCodeAt(0);
+    }
+    switch (key) {
+        case "Enter": return "\n".charCodeAt(0);
+        case "Tab": return "\t".charCodeAt(0);
+        case "Backspace": return 128;
+        case "ArrowDown": return 146;
+        case "ArrowLeft": return 147;
+        case "ArrowRight": return 148;
+        case "ArrowUp": return 149;
+        // TODO: Other keys
+        default: return 255;
     }
 }
 

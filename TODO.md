@@ -10,5 +10,7 @@ Hassel Wasm Emu TODO
 - [X] Show ASCII values for memory
 - [X] Graphics
 - [X] Hotkeys
-- [ ] Input
+- [X] Input
+- [ ] Bug: Hitting a breakpoint doesn't refresh the source view
+- [ ] All keyboard keys -> key code
 - [ ] Syntax highlighting

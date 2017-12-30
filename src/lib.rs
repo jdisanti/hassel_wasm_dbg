@@ -64,6 +64,20 @@ pub fn emulator_step(emulator_ptr: *mut DebuggingEmulator) -> usize {
 }
 
 #[no_mangle]
+pub fn emulator_key_down(emulator_ptr: &mut DebuggingEmulator, key_code: u8) {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
+        emulator.key_down(key_code);
+    });
+}
+
+#[no_mangle]
+pub fn emulator_key_up(emulator_ptr: &mut DebuggingEmulator, key_code: u8) {
+    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
+        emulator.key_up(key_code);
+    });
+}
+
+#[no_mangle]
 pub fn emulator_add_breakpoint(emulator_ptr: *mut DebuggingEmulator, address: u16) {
     with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         emulator.add_breakpoint(address);

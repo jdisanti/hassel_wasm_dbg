@@ -1,4 +1,4 @@
-use hassel_emu::bus::{GraphicsBus, PeripheralBus};
+use hassel_emu::bus::{GraphicsBus, IOBus, Key, PeripheralBus};
 use hassel_emu::cpu::Cpu;
 use hassel_emu::emulator::Emulator;
 use std::cell::{Ref, RefCell};
@@ -13,17 +13,22 @@ pub enum StepResult {
 pub struct DebuggingEmulator {
     emulator: Emulator,
     graphics_bus: Rc<RefCell<GraphicsBus>>,
+    io_bus: Rc<RefCell<IOBus>>,
     breakpoints: HashSet<u16>,
 }
 
 impl DebuggingEmulator {
     pub fn new(rom: Vec<u8>) -> DebuggingEmulator {
         let graphics_bus = Rc::new(RefCell::new(GraphicsBus::new()));
-        let peripheral_bus =
-            Rc::new(RefCell::new(PeripheralBus::new(Rc::clone(&graphics_bus))));
+        let io_bus = Rc::new(RefCell::new(IOBus::new()));
+        let peripheral_bus = Rc::new(RefCell::new(PeripheralBus::new(
+            Rc::clone(&graphics_bus),
+            Rc::clone(&io_bus),
+        )));
         DebuggingEmulator {
             emulator: Emulator::new(rom, peripheral_bus),
             graphics_bus: graphics_bus,
+            io_bus: io_bus,
             breakpoints: HashSet::new(),
         }
     }
@@ -38,6 +43,14 @@ impl DebuggingEmulator {
 
     pub fn reset(&mut self) {
         self.emulator.reset();
+    }
+
+    pub fn key_down(&mut self, key_code: u8) {
+        self.io_bus.borrow_mut().key_down(Key::from(key_code));
+    }
+
+    pub fn key_up(&mut self, key_code: u8) {
+        self.io_bus.borrow_mut().key_up(Key::from(key_code));
     }
 
     pub fn step(&mut self) -> StepResult {
