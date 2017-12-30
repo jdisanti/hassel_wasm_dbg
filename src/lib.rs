@@ -102,7 +102,10 @@ pub fn emulator_remove_all_breakpoints(emulator_ptr: *mut DebuggingEmulator) {
 pub fn emulator_play(emulator_ptr: *mut DebuggingEmulator, cycles: usize) -> usize {
     with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
         let mut cycles_run = 0;
-        while cycles_run < cycles {
+        // Always want to go slightly over the requested cycles so that
+        // the frontend doesn't think we hit a breakpoint since it's doing
+        // a naive cycles run vs. requested comparison to determine that
+        while cycles_run <= cycles {
             cycles_run += match emulator.step() {
                 StepResult::Ok(cycles) => cycles,
                 StepResult::HitBreakpoint(cycles, _pc) => {

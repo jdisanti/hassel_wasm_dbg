@@ -9,8 +9,8 @@ import {
 import { store } from './store/store';
 
 const wasm_url: string = require('../static/hassel_wasm_dbg.wasm');
-const initial_rom_url: string = require('../static/os.rom');
-const initial_src_map_url: string = require('../static/os.rom.s.map');
+const initial_rom_url: string = require('../static/pong.rom');
+const initial_src_map_url: string = require('../static/pong.rom.map');
 
 interface WasmEmulatorInstance { }
 
@@ -169,7 +169,7 @@ export class Emulator {
                     let now = new Date();
                     let timeDelta = timestamp - timeLastUpdate;
                     if (timeDelta / updateLength > 10) {
-                        timeDelta = 5;
+                        timeDelta = updateLength;
                     }
 
                     let totalCyclesRun = 0;
