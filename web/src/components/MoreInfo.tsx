@@ -37,7 +37,7 @@ export default class MoreInfo extends React.Component<MoreInfoProps, any> {
                         <li><strong>F12</strong> Step</li>
                     </ul>
 
-                    <h4>Graphics Hardware Registers</h4>
+                    <h4>Graphics Hardware Register</h4>
 
                     <p>Address <code>0xDFFE</code> is the only register for the graphics hardware. Commands can be sent
                     to it by writing a command byte followed by the required parameter bytes. Commands
@@ -59,6 +59,22 @@ export default class MoreInfo extends React.Component<MoreInfoProps, any> {
 
                     Example of writing a character:
                     <pre>{'LDA #$05\nSTA $DFFE ; Send the "set value" command\nLDA #$41 ; ASCII "A"\nSTA $DFFE ; Send the value to set'}</pre>
+
+                    <h4>IO Hardware Register</h4>
+
+                    <p>Address <code>0xDFFF</code> is the IO register. Currently, the emulator has only implemented
+                    keyboard support on this register, but in the future, it will also handle storage and serial communication.</p>
+
+                    <p>If interrupts are enabled (with the <code>CLI</code> instruction), then the IO peripheral will interrupt
+                    the CPU when a keyboard event happens. Information about the event can then be retrieved from <code>0xDFFF</code>.
+                    Alternatively, if interrupts are disabled (<code>SEI</code>), then the register can be polled for information.
+                    If reading from <code>0xDFFF</code> results in a 0, then there is no information available.</p>
+
+                    <ul>
+                        <li><code>&lt;0x01&gt; &lt;keycode&gt;:</code> Key down event for keycode</li>
+                        <li><code>&lt;0x02&gt; &lt;keycode&gt;:</code> Key up event for keycode</li>
+                    </ul>
+
                     <p><strong>GitHub Repository:</strong> Coming soon...</p>
                 </ModalBody>
                 <ModalFooter>
