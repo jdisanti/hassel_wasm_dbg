@@ -46,6 +46,11 @@ export default class MoreInfo extends React.Component<MoreInfoProps, any> {
                         <li><strong>F12</strong> Step</li>
                     </ul>
 
+                    <h4>How do I make my own ROM and MAP?</h4>
+
+                    <p>You'll need to check out and build <a href="https://github.com/jdisanti/hassel_asm" target="_blank">hassel_asm</a>,
+                    which is a 6502 assembler that will automatically generate source maps in the format this debugger expects.</p>
+
                     <h4>Graphics Hardware Register</h4>
 
                     <p>Address <code>0xDFFE</code> is the only register for the graphics hardware. Commands can be sent
