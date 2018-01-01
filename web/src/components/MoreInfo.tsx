@@ -84,7 +84,14 @@ export default class MoreInfo extends React.Component<MoreInfoProps, any> {
                         <li><code>&lt;0x02&gt; &lt;keycode&gt;:</code> Key up event for keycode</li>
                     </ul>
 
-                    <p><strong>GitHub Repository:</strong> Coming soon...</p>
+                    <p><strong>GitHub Repositories:</strong>
+                        <ul>
+                            <li><a href="https://github.com/jdisanti/hassel_lib6502" target="_blank">MOS 6502 op-code library</a></li>
+                            <li><a href="https://github.com/jdisanti/hassel_emu" target="_blank">Generic 6502 Emulation library + Hasseldorf specific hardware emulation</a></li>
+                            <li><a href="https://github.com/jdisanti/hassel_asm" target="_blank">MOS 6502 assembler</a></li>
+                            <li><a href="https://github.com/jdisanti/hassel_wasm_dbg" target="_blank">Debugger frontend and WebAssembly</a></li>
+                        </ul>
+                    </p>
                 </ModalBody>
                 <ModalFooter>
                     <Button color="primary" onClick={this.toggle.bind(this)}>OK</Button>
