@@ -1,44 +1,38 @@
-use hassel_emu::hassel::{GraphicsBus, IOBus, Key, PeripheralBus};
-use hassel_emu::cpu::Cpu;
-use hassel_emu::emulator::Emulator;
+use hassel_emu::hassel::{GraphicsDevice, HasselSystemBuilder, IODevice, Key};
+use hassel_emu::Cpu;
 use std::cell::{Ref, RefCell};
 use std::collections::HashSet;
 use std::rc::Rc;
 
 pub enum StepResult {
     Ok(usize),
-    HitBreakpoint(usize, u16)
+    HitBreakpoint(usize, u16),
 }
 
 pub struct DebuggingEmulator {
-    emulator: Emulator,
-    graphics_bus: Rc<RefCell<GraphicsBus>>,
-    io_bus: Rc<RefCell<IOBus>>,
+    emulator: Cpu,
+    graphics_device: Rc<RefCell<GraphicsDevice>>,
+    io_device: Rc<RefCell<IODevice>>,
     breakpoints: HashSet<u16>,
 }
 
 impl DebuggingEmulator {
     pub fn new(rom: Vec<u8>) -> DebuggingEmulator {
-        let graphics_bus = Rc::new(RefCell::new(GraphicsBus::new()));
-        let io_bus = Rc::new(RefCell::new(IOBus::new()));
-        let peripheral_bus = Rc::new(RefCell::new(PeripheralBus::new(
-            Rc::clone(&graphics_bus),
-            Rc::clone(&io_bus),
-        )));
+        let (memory, graphics, io) = HasselSystemBuilder::new().rom(rom).build();
         DebuggingEmulator {
-            emulator: Emulator::new(rom, peripheral_bus),
-            graphics_bus: graphics_bus,
-            io_bus: io_bus,
+            emulator: Cpu::new(memory),
+            graphics_device: graphics,
+            io_device: io,
             breakpoints: HashSet::new(),
         }
     }
 
     pub fn cpu(&self) -> &Cpu {
-        self.emulator.cpu()
+        &self.emulator
     }
 
-    pub fn graphics_bus(&self) -> Ref<GraphicsBus> {
-        self.graphics_bus.borrow()
+    pub fn graphics(&self) -> Ref<GraphicsDevice> {
+        self.graphics_device.borrow()
     }
 
     pub fn reset(&mut self) {
@@ -46,16 +40,16 @@ impl DebuggingEmulator {
     }
 
     pub fn key_down(&mut self, key_code: u8) {
-        self.io_bus.borrow_mut().key_down(Key::from(key_code));
+        self.io_device.borrow_mut().key_down(Key::from(key_code));
     }
 
     pub fn key_up(&mut self, key_code: u8) {
-        self.io_bus.borrow_mut().key_up(Key::from(key_code));
+        self.io_device.borrow_mut().key_up(Key::from(key_code));
     }
 
     pub fn step(&mut self) -> StepResult {
         let cycles = self.emulator.step();
-        let pc = self.emulator.cpu().registers().pc;
+        let pc = self.emulator.registers().pc;
         if self.breakpoints.contains(&pc) {
             StepResult::HitBreakpoint(cycles, pc)
         } else {

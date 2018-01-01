@@ -39,7 +39,9 @@ pub fn emulator_delete(emulator_ptr: *mut DebuggingEmulator) {
 }
 
 fn with_emu<F, R>(emulator_ptr: *mut DebuggingEmulator, func: F) -> R
-        where F: Fn(&mut DebuggingEmulator) -> R {
+where
+    F: Fn(&mut DebuggingEmulator) -> R,
+{
     let mut emulator: Box<DebuggingEmulator> = unsafe { Box::from_raw(emulator_ptr) };
     let result = func(&mut *emulator);
     mem::forget(emulator);
@@ -55,12 +57,13 @@ pub fn emulator_reset(emulator_ptr: *mut DebuggingEmulator) {
 
 #[no_mangle]
 pub fn emulator_step(emulator_ptr: *mut DebuggingEmulator) -> usize {
-    with_emu(emulator_ptr, &|emulator: &mut DebuggingEmulator| {
-        match emulator.step() {
+    with_emu(
+        emulator_ptr,
+        &|emulator: &mut DebuggingEmulator| match emulator.step() {
             StepResult::Ok(cycles) => cycles,
             StepResult::HitBreakpoint(cycles, _) => cycles,
-        }
-    })
+        },
+    )
 }
 
 #[no_mangle]
@@ -110,7 +113,7 @@ pub fn emulator_play(emulator_ptr: *mut DebuggingEmulator, cycles: usize) -> usi
                 StepResult::Ok(cycles) => cycles,
                 StepResult::HitBreakpoint(cycles, _pc) => {
                     cycles_run += cycles;
-                    return cycles_run
+                    return cycles_run;
                 }
             }
         }
@@ -167,9 +170,9 @@ pub fn emulator_get_memory(emulator_ptr: *mut DebuggingEmulator, buffer_ptr: *mu
     let mut buffer = unsafe { Vec::from_raw_parts(buffer_ptr, buffer_size, buffer_size) };
 
     {
-        let debug_view = emulator.cpu().bus().debug_view();
+        let debug_read = emulator.cpu().memory().debug_read();
         for i in 0..buffer_size {
-            buffer[i] = debug_view.read_byte(i as u16);
+            buffer[i] = debug_read.byte(i as u16);
         }
     }
 
@@ -184,8 +187,8 @@ pub fn emulator_get_graphics_data(emulator_ptr: *mut DebuggingEmulator, buffer_p
     let mut buffer = unsafe { Vec::from_raw_parts(buffer_ptr, buffer_size, buffer_size) };
 
     {
-        let graphics_bus = emulator.graphics_bus();
-        let frame_buffer = graphics_bus.frame_buffer();
+        let graphics = emulator.graphics();
+        let frame_buffer = graphics.frame_buffer();
         for i in 0..buffer_size {
             buffer[i] = frame_buffer[i];
         }
